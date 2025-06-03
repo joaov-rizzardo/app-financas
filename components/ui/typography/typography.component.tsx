@@ -1,21 +1,26 @@
+import { textPrimaryColor } from "@/constants/colors";
 import { ReactNode } from "react";
 import { Text } from "react-native";
 
 interface TypographyProps {
   children?: ReactNode;
-  weight?: "400" | "600" | "700";
+  weight?: "300" | "400" | "600" | "700";
   size?: number;
   lineHeight?: number;
+  color?: string;
 }
 
 export function Typography({
   size,
   weight = "400",
+  color = textPrimaryColor,
   lineHeight,
   children,
 }: TypographyProps) {
   const getFontFamily = () => {
     switch (weight) {
+      case "300":
+        return "Montserrat_300Light";
       case "400":
         return "Montserrat_400Regular";
       case "600":
@@ -31,6 +36,7 @@ export function Typography({
     <Text
       style={{
         fontSize: size,
+        color,
         fontFamily: getFontFamily(),
         lineHeight: lineHeight,
       }}

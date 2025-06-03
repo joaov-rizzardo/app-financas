@@ -1,5 +1,10 @@
 import { ReactNode } from "react";
-import { TouchableOpacity, TouchableOpacityProps } from "react-native";
+import {
+  StyleProp,
+  TouchableOpacity,
+  TouchableOpacityProps,
+  ViewStyle,
+} from "react-native";
 import { styles } from "./button.styles";
 
 interface ButtonProps extends TouchableOpacityProps {
@@ -18,11 +23,16 @@ export function Button({ variant, children, style, ...props }: ButtonProps) {
         return styles.primary;
     }
   };
+  const buttonStyle: StyleProp<ViewStyle> = [
+    styles.base,
+    getStylesByVariant(),
+    style,
+  ];
+  if (props.disabled) {
+    buttonStyle.push(styles.disabled);
+  }
   return (
-    <TouchableOpacity
-      style={[styles.base, getStylesByVariant(), style]}
-      {...props}
-    >
+    <TouchableOpacity style={buttonStyle} {...props}>
       {children}
     </TouchableOpacity>
   );

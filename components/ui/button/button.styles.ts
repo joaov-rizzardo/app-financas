@@ -1,7 +1,7 @@
 import {
-    brandColor,
-    textPrimaryColor,
-    textSecondaryColor,
+  brandColor,
+  textPrimaryColor,
+  textSecondaryColor,
 } from "@/constants/colors";
 import { StyleSheet } from "react-native";
 
@@ -20,5 +20,8 @@ export const styles = StyleSheet.create({
   tertiary: {
     backgroundColor: "transparent",
     color: textSecondaryColor,
+  },
+  disabled: {
+    opacity: 0.1,
   },
 });
