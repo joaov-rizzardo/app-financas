@@ -28,4 +28,9 @@ export const styles = StyleSheet.create({
   input: {
     flex: 1,
   },
+  movimentationsArea: {
+    marginTop: 24,
+    paddingHorizontal: 12,
+    gap: 20,
+  },
 });
