@@ -1,5 +1,8 @@
 export const backgroundColor = "#1E1E1E";
+export const cardColor = "#2A2A2A";
 export const textSecondaryColor = "#A1A1A1";
 export const textPrimaryColor = "#E4E4E4";
 export const borderColor = "#3A3A3A";
 export const brandColor = "#329542";
+export const positiveColor = "#67B356";
+export const negativeColor = "#B73030"

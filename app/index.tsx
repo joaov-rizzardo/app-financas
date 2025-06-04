@@ -2,6 +2,7 @@ import { backgroundColor } from "@/constants/colors";
 import {
   Montserrat_300Light,
   Montserrat_400Regular,
+  Montserrat_500Medium,
   Montserrat_600SemiBold,
   Montserrat_700Bold,
   useFonts,
@@ -13,6 +14,7 @@ export default function Root() {
   useFonts({
     Montserrat_300Light,
     Montserrat_400Regular,
+    Montserrat_500Medium,
     Montserrat_600SemiBold,
     Montserrat_700Bold,
   });

@@ -4,7 +4,7 @@ import { Text } from "react-native";
 
 interface TypographyProps {
   children?: ReactNode;
-  weight?: "300" | "400" | "600" | "700";
+  weight?: "300" | "400" | "500" | "600" | "700";
   size?: number;
   lineHeight?: number;
   color?: string;
@@ -23,6 +23,8 @@ export function Typography({
         return "Montserrat_300Light";
       case "400":
         return "Montserrat_400Regular";
+      case "500":
+        return "Montserrat_500Medium";
       case "600":
         return "Montserrat_600SemiBold";
       case "700":
