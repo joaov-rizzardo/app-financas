@@ -6,3 +6,4 @@ export const borderColor = "#3A3A3A";
 export const brandColor = "#329542";
 export const positiveColor = "#67B356";
 export const negativeColor = "#B73030"
+export const inputBackgroundColor = "#333333";
