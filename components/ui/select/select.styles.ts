@@ -1,8 +1,8 @@
 import {
-    backgroundColor,
-    borderColor,
-    inputBackgroundColor,
-    textPrimaryColor,
+  backgroundColor,
+  borderColor,
+  inputBackgroundColor,
+  textPrimaryColor,
 } from "@/constants/colors";
 import { StyleSheet } from "react-native";
 
@@ -32,7 +32,7 @@ export const styles = StyleSheet.create({
     borderTopRightRadius: 40,
     borderTopLeftRadius: 40,
     width: "100%",
-    height: "50%",
+    maxHeight: "50%",
     paddingHorizontal: 32,
     paddingVertical: 20,
   },
