@@ -9,7 +9,7 @@ interface RadioProps {
 
 export function Radio({ checked, onChange }: RadioProps) {
   function toogleRadio() {
-    if (onChange) onChange(!checked);
+    if (onChange) onChange(true);
   }
   return (
     <Pressable

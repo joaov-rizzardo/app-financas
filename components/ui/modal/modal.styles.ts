@@ -15,7 +15,8 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: borderColor,
     borderRadius: 8,
-    width: "100%"
+    width: "100%",
+    maxHeight: "100%"
   },
   modalHeader: {
     flexDirection: "row",
