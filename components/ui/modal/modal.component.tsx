@@ -22,7 +22,7 @@ export function Modal({ open, closeModal, children }: ModalProps) {
       <Pressable style={styles.modalOverlay} onPress={closeModal}>
         <Pressable style={styles.modalContent}>
           <View style={styles.modalHeader}>
-            <Button variant="tertiary" onPress={closeModal}>
+            <Button variant="tertiary" onPress={closeModal} mode="icon">
               <MaterialIcon name="close" size={24} color={textPrimaryColor} />
             </Button>
           </View>

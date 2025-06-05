@@ -10,11 +10,11 @@ export function TabNavigator() {
   const router = useRouter();
   return (
     <View style={styles.container}>
-      <Button style={styles.navigationButton} variant="tertiary" onPress={() => router.push("/home")}>
+      <Button style={styles.navigationButton} variant="tertiary" onPress={() => router.push("/home")} mode="icon">
         <MaterialIcons name="home" size={54} color={textSecondaryColor} />
       </Button>
       <CreateMovimentationModal />
-      <Button style={styles.navigationButton} variant="tertiary" onPress={() => router.push("/charts")}>
+      <Button style={styles.navigationButton} variant="tertiary" onPress={() => router.push("/charts")} mode="icon">
         <MaterialIcons name="pie-chart" size={54} color={textSecondaryColor} />
       </Button>
     </View>

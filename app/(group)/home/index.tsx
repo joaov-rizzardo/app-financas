@@ -22,7 +22,7 @@ export default function Home() {
       </View>
       <View style={styles.searchArea}>
         <Input icon="search" placeholder="Buscar..." containerStyle={styles.input}/>
-        <Button variant="tertiary">
+        <Button variant="tertiary" mode="icon">
           <MaterialIcon name="swap-vert" color={textPrimaryColor} size={32}/>
         </Button>
       </View>

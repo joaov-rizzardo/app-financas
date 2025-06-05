@@ -9,10 +9,17 @@ import { styles } from "./button.styles";
 
 interface ButtonProps extends TouchableOpacityProps {
   variant: "primary" | "secondary" | "tertiary";
+  mode?: "icon" | "normal";
   children: ReactNode;
 }
 
-export function Button({ variant, children, style, ...props }: ButtonProps) {
+export function Button({
+  variant,
+  children,
+  mode = "normal",
+  style,
+  ...props
+}: ButtonProps) {
   const getStylesByVariant = () => {
     switch (variant) {
       case "primary":
@@ -30,6 +37,9 @@ export function Button({ variant, children, style, ...props }: ButtonProps) {
     getStylesByVariant(),
     style,
   ];
+  if (mode === "icon") {
+    buttonStyle.push(styles.icon);
+  }
   if (props.disabled) {
     buttonStyle.push(styles.disabled);
   }

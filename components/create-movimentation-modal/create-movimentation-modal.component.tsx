@@ -21,7 +21,7 @@ export function CreateMovimentationModal() {
 
   return (
     <>
-      <Button variant="primary" style={styles.addButton} onPress={openModal}>
+      <Button variant="primary" style={styles.addButton} onPress={openModal} mode="icon">
         <MaterialIcons name="add" size={38} color={textPrimaryColor} />
       </Button>
       <Modal open={open} closeModal={closeModal}>
