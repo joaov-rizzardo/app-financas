@@ -17,6 +17,8 @@ export function Button({ variant, children, style, ...props }: ButtonProps) {
     switch (variant) {
       case "primary":
         return styles.primary;
+      case "secondary":
+        return styles.secondary;
       case "tertiary":
         return styles.tertiary;
       default:

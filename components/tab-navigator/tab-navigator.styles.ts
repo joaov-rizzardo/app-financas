@@ -11,10 +11,6 @@ export const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: borderColor,
   },
-  addButton: {
-    borderRadius: 54,
-    padding: 8,
-  },
   navigationButton: {
     padding: 0,
   },

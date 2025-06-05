@@ -1,4 +1,5 @@
 import {
+  borderColor,
   brandColor,
   textPrimaryColor,
   textSecondaryColor,
@@ -16,6 +17,12 @@ export const styles = StyleSheet.create({
   primary: {
     backgroundColor: brandColor,
     color: textPrimaryColor,
+  },
+  secondary: {
+    backgroundColor: "transparent",
+    color: textSecondaryColor,
+    borderWidth: 1,
+    borderColor: borderColor,
   },
   tertiary: {
     backgroundColor: "transparent",
