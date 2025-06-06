@@ -14,8 +14,10 @@ import {
 } from "../typography/typography.component";
 import { styles } from "./button.styles";
 
+export type ButtonVariants = "primary" | "secondary" | "tertiary";
+
 interface ButtonProps extends TouchableOpacityProps {
-  variant: "primary" | "secondary" | "tertiary";
+  variant: ButtonVariants;
   mode?: "icon" | "normal";
   children: ReactNode;
 }
