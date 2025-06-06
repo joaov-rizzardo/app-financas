@@ -21,7 +21,12 @@ export function CreateMovimentationModal() {
 
   return (
     <>
-      <Button variant="primary" style={styles.addButton} onPress={openModal} mode="icon">
+      <Button
+        variant="primary"
+        style={styles.addButton}
+        onPress={openModal}
+        mode="icon"
+      >
         <MaterialIcons name="add" size={38} color={textPrimaryColor} />
       </Button>
       <Modal open={open} closeModal={closeModal}>
@@ -38,6 +43,20 @@ export function CreateMovimentationModal() {
                 Valor
               </Typography>
               <Input placeholder="Informe o valor" />
+            </View>
+            <View style={styles.radioContainer}>
+              <View style={styles.radioItem}>
+                <Typography size={16} weight="400" color={textPrimaryColor}>
+                  Despesa
+                </Typography>
+                <Radio checked />
+              </View>
+              <View style={styles.radioItem}>
+                <Typography size={16} weight="400" color={textPrimaryColor}>
+                  Receita
+                </Typography>
+                <Radio />
+              </View>
             </View>
             <View style={styles.inputBox}>
               <Typography color={textPrimaryColor} size={16} weight="400">
@@ -70,27 +89,13 @@ export function CreateMovimentationModal() {
             </View>
             <View style={styles.inputBox}>
               <Typography color={textPrimaryColor} size={16} weight="400">
-                Valor
+                Data
               </Typography>
               <DatePicker
                 value={date}
                 onChangeValue={(value) => setDate(value)}
                 maximumDate={new Date()}
               />
-            </View>
-            <View style={styles.radioContainer}>
-              <View style={styles.radioItem}>
-                <Typography size={16} weight="400" color={textPrimaryColor}>
-                  Despesa
-                </Typography>
-                <Radio checked />
-              </View>
-              <View style={styles.radioItem}>
-                <Typography size={16} weight="400" color={textPrimaryColor}>
-                  Receita
-                </Typography>
-                <Radio />
-              </View>
             </View>
           </View>
         </ScrollView>
