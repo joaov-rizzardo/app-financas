@@ -1,7 +1,7 @@
 import {
-    textPrimaryColor,
-    textSecondaryColor,
-    warningColor,
+  textPrimaryColor,
+  textSecondaryColor,
+  warningColor,
 } from "@/constants/colors";
 import { useErrorModalStore } from "@/store/error-modal-store";
 import { View } from "react-native";
@@ -33,7 +33,7 @@ export function ErrorModal() {
         </View>
         <View style={styles.actionsContainer}>
           <Button variant="secondary" onPress={close}>
-            <Typography color={textSecondaryColor} size={16} weight="400">
+            <Typography>
               Fechar
             </Typography>
           </Button>

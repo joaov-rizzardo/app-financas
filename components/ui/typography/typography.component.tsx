@@ -2,7 +2,7 @@ import { textPrimaryColor } from "@/constants/colors";
 import { ReactNode } from "react";
 import { Text } from "react-native";
 
-interface TypographyProps {
+export interface TypographyProps {
   children?: ReactNode;
   weight?: "300" | "400" | "500" | "600" | "700";
   size?: number;

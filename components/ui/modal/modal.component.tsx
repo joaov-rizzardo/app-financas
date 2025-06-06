@@ -1,4 +1,3 @@
-import { textPrimaryColor } from "@/constants/colors";
 import { ReactNode } from "react";
 import { Modal as NativeModal, Pressable, View } from "react-native";
 import MaterialIcon from "react-native-vector-icons/MaterialIcons";
@@ -23,7 +22,7 @@ export function Modal({ open, closeModal, children }: ModalProps) {
         <Pressable style={styles.modalContent}>
           <View style={styles.modalHeader}>
             <Button variant="tertiary" onPress={closeModal} mode="icon">
-              <MaterialIcon name="close" size={24} color={textPrimaryColor} />
+              <MaterialIcon name="close" size={24} />
             </Button>
           </View>
           {children}

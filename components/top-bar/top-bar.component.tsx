@@ -18,17 +18,18 @@ export function Topbar() {
   return (
     <View style={styles.container}>
       <Button variant="tertiary" onPress={decrement} mode="icon">
-        <MaterialIcons name="chevron-left" size={24} color={textPrimaryColor} />
+        <MaterialIcons name="chevron-left" size={24} />
       </Button>
       <Typography size={24} weight="300" color={textPrimaryColor}>
         {getShortMonthName(month)} {year}
       </Typography>
-      <Button variant="tertiary" onPress={increment} disabled={isCurrentMonth()} mode="icon">
-        <MaterialIcons
-          name="chevron-right"
-          size={24}
-          color={textPrimaryColor}
-        />
+      <Button
+        variant="tertiary"
+        onPress={increment}
+        disabled={isCurrentMonth()}
+        mode="icon"
+      >
+        <MaterialIcons name="chevron-right" size={24} />
       </Button>
     </View>
   );

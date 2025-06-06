@@ -27,7 +27,7 @@ export function CreateMovimentationModal() {
         onPress={openModal}
         mode="icon"
       >
-        <MaterialIcons name="add" size={38} color={textPrimaryColor} />
+        <MaterialIcons name="add" size={38} />
       </Button>
       <Modal open={open} closeModal={closeModal}>
         <ScrollView>
@@ -101,12 +101,12 @@ export function CreateMovimentationModal() {
         </ScrollView>
         <View style={styles.actionsContainer}>
           <Button variant="secondary" onPress={closeModal}>
-            <Typography size={16} weight="400">
+            <Typography>
               Fechar
             </Typography>
           </Button>
           <Button variant="primary">
-            <Typography size={16} weight="400">
+            <Typography>
               Salvar
             </Typography>
           </Button>

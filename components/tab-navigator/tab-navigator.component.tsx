@@ -1,4 +1,3 @@
-import { textSecondaryColor } from "@/constants/colors";
 import { useRouter } from "expo-router";
 import { View } from "react-native";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
@@ -11,11 +10,11 @@ export function TabNavigator() {
   return (
     <View style={styles.container}>
       <Button style={styles.navigationButton} variant="tertiary" onPress={() => router.push("/home")} mode="icon">
-        <MaterialIcons name="home" size={54} color={textSecondaryColor} />
+        <MaterialIcons name="home" size={54} />
       </Button>
       <CreateMovimentationModal />
       <Button style={styles.navigationButton} variant="tertiary" onPress={() => router.push("/charts")} mode="icon">
-        <MaterialIcons name="pie-chart" size={54} color={textSecondaryColor} />
+        <MaterialIcons name="pie-chart" size={54} />
       </Button>
     </View>
   );
