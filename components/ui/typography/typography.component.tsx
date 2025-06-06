@@ -8,10 +8,12 @@ interface TypographyProps {
   size?: number;
   lineHeight?: number;
   color?: string;
+  align?: "auto" | "left" | "right" | "center" | "justify";
 }
 
 export function Typography({
   size,
+  align,
   weight = "400",
   color = textPrimaryColor,
   lineHeight,
@@ -41,6 +43,7 @@ export function Typography({
         color,
         fontFamily: getFontFamily(),
         lineHeight: lineHeight,
+        textAlign: align ?? "auto",
       }}
     >
       {children}
