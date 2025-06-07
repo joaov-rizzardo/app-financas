@@ -1,26 +1,26 @@
 import {
-    negativeColor,
-    positiveColor,
-    textPrimaryColor,
-    textSecondaryColor,
+  negativeColor,
+  positiveColor,
+  textPrimaryColor,
+  textSecondaryColor,
 } from "@/constants/colors";
 import { View } from "react-native";
 import MaterialIcon from "react-native-vector-icons/MaterialIcons";
 import { ConditionalRender } from "../conditional-render";
 import { Typography } from "../ui/typography/typography.component";
-import { styles } from "./movimentation-card.styles";
+import { styles } from "./transaction-card.styles";
 
-interface MovimentationCardProps {
+interface TransactionCardProps {
   icon: string;
   description: string;
   value: number;
 }
 
-export function MovimentationCard({
+export function TransactionCard({
   icon,
   description,
   value,
-}: MovimentationCardProps) {
+}: TransactionCardProps) {
   return (
     <View style={styles.container}>
       <MaterialIcon name={icon} size={36} color={textPrimaryColor} />

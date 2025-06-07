@@ -1,5 +1,5 @@
-import { MovimentationCard } from "@/components/movimentation-card/movimentation-card.component";
 import { SummaryCard } from "@/components/summary-card/summary-card.component";
+import { TransactionCard } from "@/components/transaction-card/transaction-card.component";
 import { Button } from "@/components/ui/button/button.component";
 import { Input } from "@/components/ui/input/input.component";
 import { textPrimaryColor } from "@/constants/colors";
@@ -21,16 +21,28 @@ export default function Home() {
         </View>
       </View>
       <View style={styles.searchArea}>
-        <Input icon="search" placeholder="Buscar..." containerStyle={styles.input}/>
+        <Input
+          icon="search"
+          placeholder="Buscar..."
+          containerStyle={styles.input}
+        />
         <Button variant="tertiary" mode="icon">
-          <MaterialIcon name="swap-vert" color={textPrimaryColor} size={32}/>
+          <MaterialIcon name="swap-vert" color={textPrimaryColor} size={32} />
         </Button>
       </View>
       <View style={styles.movimentationsArea}>
-        <MovimentationCard icon="home" value={-123.54} description="Gasto com a casa"/>
-        <MovimentationCard icon="payments" value={1650.00} description="Salário"/>
-        <MovimentationCard icon="shopping-cart" value={-654.32} description="Supermercado"/>
-        <MovimentationCard icon="pets" value={-50.35} description="Ração veio"/>
+        <TransactionCard
+          icon="home"
+          value={-123.54}
+          description="Gasto com a casa"
+        />
+        <TransactionCard icon="payments" value={1650.0} description="Salário" />
+        <TransactionCard
+          icon="shopping-cart"
+          value={-654.32}
+          description="Supermercado"
+        />
+        <TransactionCard icon="pets" value={-50.35} description="Ração veio" />
       </View>
     </ScrollView>
   );

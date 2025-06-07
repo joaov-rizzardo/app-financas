@@ -1,7 +1,4 @@
-import {
-  borderColor,
-  brandColor
-} from "@/constants/colors";
+import { borderColor, brandColor, negativeColor } from "@/constants/colors";
 import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
@@ -27,6 +24,12 @@ export const styles = StyleSheet.create({
   },
   tertiary: {
     backgroundColor: "transparent",
+  },
+  dangerOutline: {
+    backgroundColor: "transparent",
+    borderColor: negativeColor,
+    borderWidth: 1,
+    color: negativeColor,
   },
   disabled: {
     opacity: 0.1,

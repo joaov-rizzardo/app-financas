@@ -1,4 +1,8 @@
-import { textPrimaryColor, textSecondaryColor } from "@/constants/colors";
+import {
+  negativeColor,
+  textPrimaryColor,
+  textSecondaryColor,
+} from "@/constants/colors";
 import React, { ReactElement, ReactNode } from "react";
 import {
   StyleProp,
@@ -14,7 +18,11 @@ import {
 } from "../typography/typography.component";
 import { styles } from "./button.styles";
 
-export type ButtonVariants = "primary" | "secondary" | "tertiary";
+export type ButtonVariants =
+  | "primary"
+  | "secondary"
+  | "tertiary"
+  | "danger-outline";
 
 interface ButtonProps extends TouchableOpacityProps {
   variant: ButtonVariants;
@@ -72,6 +80,8 @@ const getStylesByVariant = (variant: string) => {
       return styles.secondary;
     case "tertiary":
       return styles.tertiary;
+    case "danger-outline":
+      return styles.dangerOutline;
     default:
       return styles.primary;
   }
@@ -85,6 +95,8 @@ const getTextColorByVariant = (variant: string) => {
       return textSecondaryColor;
     case "tertiary":
       return textSecondaryColor;
+    case "danger-outline":
+      return negativeColor;
     default:
       return textPrimaryColor;
   }
