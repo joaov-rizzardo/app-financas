@@ -7,14 +7,14 @@ type MonthStoreState = {
   decrement: () => void;
 };
 
-function incrementMonth(month: number, year: number) {
+export function incrementMonth(month: number, year: number) {
   if (month >= 11) {
     return { month: 0, year: year + 1 };
   }
   return { month: month + 1, year };
 }
 
-function decrementMonth(month: number, year: number) {
+export function decrementMonth(month: number, year: number) {
   if (month <= 0) {
     return { month: 11, year: year - 1 };
   }
