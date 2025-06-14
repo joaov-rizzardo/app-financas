@@ -3,6 +3,7 @@ import { TransactionModel } from "@/models/transaction.model";
 import {
   collection,
   getDocs,
+  orderBy,
   query,
   Timestamp,
   where,
@@ -22,7 +23,8 @@ export class TransactionsService {
     const q = await query(
       collection(db, "transactions"),
       where("date", ">=", start),
-      where("date", "<", end)
+      where("date", "<", end),
+      orderBy("date", "desc")
     );
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map((doc) => {

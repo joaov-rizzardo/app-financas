@@ -3,21 +3,30 @@ import { TransactionCard } from "@/components/transaction-card/transaction-card.
 import { Button } from "@/components/ui/button/button.component";
 import { Input } from "@/components/ui/input/input.component";
 import { textPrimaryColor } from "@/constants/colors";
+import { useTransactionsQuery } from "@/hooks/queries/use-transactions-query";
+import { useSummary } from "@/hooks/use-summary";
 import { ScrollView, View } from "react-native";
 import MaterialIcon from "react-native-vector-icons/MaterialIcons";
 import { styles } from "../../../styles/home.styles";
 
 export default function Home() {
+  const {
+    data: { currentTransactions },
+  } = useTransactionsQuery();
+  const { calculateSummary } = useSummary()
+
+  const summary = calculateSummary()
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.cardsContainer}>
         <View style={styles.cardsLine}>
-          <SummaryCard name="Receita" value={1600} diffPercent={14} />
-          <SummaryCard name="Despesas" value={850.48} diffPercent={-23} />
+          <SummaryCard name="Receita" value={summary.incomings} diffPercent={summary.incomingsPercent} />
+          <SummaryCard name="Despesas" value={summary.expenses} diffPercent={summary.expensesPercent} />
         </View>
         <View style={styles.cardsLine}>
-          <SummaryCard name="Saldo" value={450.18} diffPercent={13} />
-          <SummaryCard name="Gasto p/ dia" value={335.18} diffPercent={-15} />
+          <SummaryCard name="Saldo" value={summary.balance} diffPercent={summary.balancePercent} />
+          <SummaryCard name="Gasto p/ dia" value={summary.dailyExpense} diffPercent={0} />
         </View>
       </View>
       <View style={styles.searchArea}>
@@ -31,18 +40,9 @@ export default function Home() {
         </Button>
       </View>
       <View style={styles.movimentationsArea}>
-        <TransactionCard
-          icon="home"
-          value={-123.54}
-          description="Gasto com a casa"
-        />
-        <TransactionCard icon="payments" value={1650.0} description="Salário" />
-        <TransactionCard
-          icon="shopping-cart"
-          value={-654.32}
-          description="Supermercado"
-        />
-        <TransactionCard icon="pets" value={-50.35} description="Ração veio" />
+        {currentTransactions.map((transaction) => (
+          <TransactionCard key={transaction.id} transaction={transaction} />
+        ))}
       </View>
     </ScrollView>
   );

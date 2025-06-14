@@ -1,8 +1,8 @@
 import {
-    negativeColor,
-    positiveColor,
-    textPrimaryColor,
-    textSecondaryColor,
+  negativeColor,
+  positiveColor,
+  textPrimaryColor,
+  textSecondaryColor,
 } from "@/constants/colors";
 import { View } from "react-native";
 import MaterialIcon from "react-native-vector-icons/MaterialIcons";
@@ -17,6 +17,11 @@ interface SummaryCardProps {
 }
 
 export function SummaryCard({ name, value, diffPercent }: SummaryCardProps) {
+  const formatter = Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
+
   return (
     <View style={styles.container}>
       <View>
@@ -24,10 +29,7 @@ export function SummaryCard({ name, value, diffPercent }: SummaryCardProps) {
           {name}
         </Typography>
         <Typography color={textPrimaryColor} size={16} weight="400">
-          {value.toLocaleString("pt-BR", {
-            style: "currency",
-            currency: "BRL",
-          })}
+          {formatter.format(value)}
         </Typography>
       </View>
       <ConditionalRender condition={diffPercent < 0}>

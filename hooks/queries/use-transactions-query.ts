@@ -28,6 +28,10 @@ export function useTransactionsQuery() {
         currentTransactions,
       };
     },
+    initialData: {
+      currentTransactions: [],
+      previousTransactions: [],
+    },
   });
   return query;
 }
