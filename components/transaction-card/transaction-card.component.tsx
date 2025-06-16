@@ -6,9 +6,11 @@ import {
 } from "@/constants/colors";
 import { useCategory } from "@/hooks/use-category";
 import { TransactionModel } from "@/models/transaction.model";
-import { View } from "react-native";
+import { useState } from "react";
+import { Pressable, View } from "react-native";
 import MaterialIcon from "react-native-vector-icons/MaterialIcons";
 import { ConditionalRender } from "../conditional-render";
+import { TransactionDetailsModal } from "../transaction-details-modal/transaction-details-modal.component";
 import { Typography } from "../ui/typography/typography.component";
 import { styles } from "./transaction-card.styles";
 
@@ -17,12 +19,18 @@ interface TransactionCardProps {
 }
 
 export function TransactionCard({ transaction }: TransactionCardProps) {
+  const [isOpenOpenDetails, setIsOpenDetails] = useState(false);
   const { getCategory } = useCategory();
+
+  const openDetails = () => setIsOpenDetails(true);
+
+  const closeDetails = () => setIsOpenDetails(false);
 
   const category = getCategory(transaction.category, transaction.type);
 
   return (
-    <View style={styles.container}>
+    <Pressable style={styles.container} onPress={openDetails}>
+      <TransactionDetailsModal isOpen={isOpenOpenDetails} closeModal={closeDetails} transaction={transaction} category={category}/>
       <MaterialIcon
         name={category.icon}
         size={36}
@@ -45,6 +53,6 @@ export function TransactionCard({ transaction }: TransactionCardProps) {
       <ConditionalRender condition={transaction.type === "income"}>
         <MaterialIcon name="arrow-upward" size={24} color={positiveColor} />
       </ConditionalRender>
-    </View>
+    </Pressable>
   );
 }
