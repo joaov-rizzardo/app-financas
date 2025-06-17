@@ -1,13 +1,13 @@
 import { ConditionalRender } from "@/components/conditional-render";
-import { Pressable, View } from "react-native";
+import { Pressable, PressableProps, View } from "react-native";
 import { styles } from "./radio.styles";
 
-interface RadioProps {
+interface RadioProps extends PressableProps {
   checked?: boolean;
   onChange?: (checked: boolean) => void;
 }
 
-export function Radio({ checked, onChange }: RadioProps) {
+export function Radio({ checked, onChange, ...props}: RadioProps) {
   function toogleRadio() {
     if (onChange) onChange(true);
   }
@@ -15,6 +15,7 @@ export function Radio({ checked, onChange }: RadioProps) {
     <Pressable
       style={[styles.container, checked ? styles.checked : {}]}
       onPress={toogleRadio}
+      {...props}
     >
       <ConditionalRender condition={Boolean(checked)}>
         <View style={styles.circle} />

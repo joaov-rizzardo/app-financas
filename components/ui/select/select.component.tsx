@@ -2,11 +2,11 @@ import { ConditionalRender } from "@/components/conditional-render";
 import { textPrimaryColor, textSecondaryColor } from "@/constants/colors";
 import { useState } from "react";
 import {
-    Modal,
-    Pressable,
-    ScrollView,
-    TouchableOpacity,
-    View,
+  Modal,
+  Pressable,
+  ScrollView,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { Radio } from "../radio/radio.component";

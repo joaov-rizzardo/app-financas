@@ -19,5 +19,14 @@ export function useCategory() {
     return data.incomeCategories.get(id) || blankCategory;
   };
 
-  return { getCategory }
+  const getCategories = (type: "income" | "expense") => {
+    if(!data) return [];
+        if (type === "expense") {
+      return Array.from(data.expenseCategories.values());
+    }
+    return Array.from(data.incomeCategories.values());
+
+  }
+
+  return { getCategory, getCategories }
 }
