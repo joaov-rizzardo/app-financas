@@ -1,4 +1,4 @@
-import { brandColor, textPrimaryColor } from "@/constants/colors";
+import { brandColor, errorColor, textPrimaryColor } from "@/constants/colors";
 import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
@@ -19,5 +19,8 @@ export const styles = StyleSheet.create({
     height: 10,
     borderRadius: 10,
     backgroundColor: textPrimaryColor,
+  },
+  error: {
+    borderColor: errorColor,
   },
 });

@@ -1,7 +1,8 @@
 import {
-    borderColor,
-    inputBackgroundColor,
-    textPrimaryColor,
+  borderColor,
+  errorColor,
+  inputBackgroundColor,
+  textPrimaryColor
 } from "@/constants/colors";
 import { StyleSheet } from "react-native";
 
@@ -15,6 +16,7 @@ export const styles = StyleSheet.create({
     backgroundColor: inputBackgroundColor,
     borderWidth: 1,
     borderColor: borderColor,
+    borderStyle: "solid",
     borderRadius: 4,
   },
   input: {
@@ -23,4 +25,7 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     color: textPrimaryColor,
   },
+  error: {
+    borderColor: errorColor
+  }
 });

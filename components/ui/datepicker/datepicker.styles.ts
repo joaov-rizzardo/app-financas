@@ -1,4 +1,4 @@
-import { borderColor, inputBackgroundColor } from "@/constants/colors";
+import { borderColor, errorColor, inputBackgroundColor } from "@/constants/colors";
 import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
@@ -13,4 +13,7 @@ export const styles = StyleSheet.create({
     borderColor: borderColor,
     backgroundColor: inputBackgroundColor,
   },
+  error: {
+    borderColor: errorColor
+  }
 });

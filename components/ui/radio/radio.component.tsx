@@ -4,16 +4,17 @@ import { styles } from "./radio.styles";
 
 interface RadioProps extends PressableProps {
   checked?: boolean;
+  error?: boolean;
   onChange?: (checked: boolean) => void;
 }
 
-export function Radio({ checked, onChange, ...props}: RadioProps) {
+export function Radio({ checked, onChange, error, ...props}: RadioProps) {
   function toogleRadio() {
     if (onChange) onChange(true);
   }
   return (
     <Pressable
-      style={[styles.container, checked ? styles.checked : {}]}
+      style={[styles.container, checked ? styles.checked : {}, error ? styles.error : {}]}
       onPress={toogleRadio}
       {...props}
     >

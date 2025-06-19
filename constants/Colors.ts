@@ -8,3 +8,4 @@ export const positiveColor = "#67B356";
 export const negativeColor = "#B73030"
 export const inputBackgroundColor = "#333333";
 export const warningColor = "#B5AB15";
+export const errorColor = "rgba(183, 48, 48, 0.5)";

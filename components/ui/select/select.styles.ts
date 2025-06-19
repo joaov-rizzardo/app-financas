@@ -1,6 +1,7 @@
 import {
   backgroundColor,
   borderColor,
+  errorColor,
   inputBackgroundColor,
   textPrimaryColor,
 } from "@/constants/colors";
@@ -18,6 +19,9 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: borderColor,
     borderRadius: 4,
+  },
+  error: {
+    borderColor: errorColor,
   },
   modalOverlay: {
     flex: 1,

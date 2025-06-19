@@ -19,6 +19,7 @@ interface SelectProps {
   placeholder?: string;
   onChange: (value: string) => void;
   options: { key: string; value: string }[];
+  error?: boolean;
 }
 
 export function Select({
@@ -27,6 +28,7 @@ export function Select({
   placeholder,
   onChange,
   options,
+  error,
 }: SelectProps) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -43,7 +45,7 @@ export function Select({
 
   return (
     <>
-      <TouchableOpacity style={styles.container} onPress={open}>
+      <TouchableOpacity style={[styles.container, error ? styles.error : {}]} onPress={open}>
         <ConditionalRender
           condition={value === ""}
         >

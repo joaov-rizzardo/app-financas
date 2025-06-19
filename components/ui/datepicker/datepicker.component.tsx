@@ -2,10 +2,10 @@ import { ConditionalRender } from "@/components/conditional-render";
 import { textPrimaryColor } from "@/constants/colors";
 import { formatDateToDDMMYYYY } from "@/helpers/date-formats";
 import RNDatePicker, {
-    AndroidNativeProps,
-    DateTimePickerEvent,
-    IOSNativeProps,
-    WindowsNativeProps,
+  AndroidNativeProps,
+  DateTimePickerEvent,
+  IOSNativeProps,
+  WindowsNativeProps,
 } from "@react-native-community/datetimepicker";
 import { useState } from "react";
 import { TouchableOpacity } from "react-native";
@@ -20,9 +20,10 @@ type RNDatePickerProps =
 
 type DatePickerProps = {
   onChangeValue: (value: Date) => void;
+  error?: boolean;
 } & RNDatePickerProps;
 
-export function DatePicker({ onChangeValue, ...props }: DatePickerProps) {
+export function DatePicker({ onChangeValue, error, ...props }: DatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const open = () => setIsOpen(true);
@@ -37,7 +38,7 @@ export function DatePicker({ onChangeValue, ...props }: DatePickerProps) {
   };
 
   return (
-    <TouchableOpacity style={styles.container} onPress={open}>
+    <TouchableOpacity style={[styles.container, error ? styles.error : {}]} onPress={open}>
       <MaterialIcons name="calendar-month" size={24} color={textPrimaryColor} />
       <Typography size={16} weight="400" color={textPrimaryColor}>
         {formatDateToDDMMYYYY(props.value)}
