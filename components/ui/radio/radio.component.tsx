@@ -9,8 +9,9 @@ interface RadioProps extends PressableProps {
 }
 
 export function Radio({ checked, onChange, error, ...props}: RadioProps) {
+  
   function toogleRadio() {
-    if (onChange) onChange(true);
+    if (!checked && onChange) onChange(true);
   }
   return (
     <Pressable

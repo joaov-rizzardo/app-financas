@@ -1,4 +1,5 @@
 import { textPrimaryColor } from "@/constants/colors";
+import { moneyMask } from "@/helpers/money-mask";
 import { useCategory } from "@/hooks/use-category";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useState } from "react";
@@ -16,21 +17,26 @@ import { Typography } from "../ui/typography/typography.component";
 import { styles } from "./create-transaction-modal.styles";
 
 const FormSchema = z.object({
-  description: z.string(),
-  value: z.number(),
+  description: z.string().min(1).max(20),
+  value: z
+    .string()
+    .transform((value) => Number(value.replace(",", ".")))
+    .refine((val) => val > 0),
   type: z.enum(["expense", "income"]),
-  category: z.string(),
+  category: z.string().min(1),
   date: z.date(),
 });
 
-type FormType = z.infer<typeof FormSchema>;
+type FormTypeInput = z.input<typeof FormSchema>;
 
-const defaultValue: FormType = {
+type FormTypeOutput = z.output<typeof FormSchema>;
+
+const defaultValue: FormTypeInput = {
   category: "",
   date: new Date(),
   type: "expense",
   description: "",
-  value: 0,
+  value: "",
 };
 
 export function CreateTransactionModal() {
@@ -45,7 +51,7 @@ export function CreateTransactionModal() {
   const openModal = useCallback(() => setOpen(true), []);
   const closeModal = useCallback(() => setOpen(false), []);
 
-  const onSubmit = (formData: FormType) => {
+  const onSubmit = (formData: FormTypeOutput) => {
     console.log(formData);
   };
 
@@ -70,16 +76,27 @@ export function CreateTransactionModal() {
                 placeholder="Informe a descrição"
                 {...form.register("description")}
                 onChangeText={(text) => form.setValue("description", text)}
+                error={form.formState.errors.description !== undefined}
+                maxLength={20}
               />
             </View>
             <View style={styles.inputBox}>
               <Typography color={textPrimaryColor} size={16} weight="400">
                 Valor
               </Typography>
-              <Input
-                placeholder="Informe o valor"
-                {...form.register("value")}
-                onChangeText={(text) => form.setValue("value", Number(text))}
+              <Controller
+                control={form.control}
+                name="value"
+                render={({ field: { value, onBlur, onChange } }) => (
+                  <Input
+                    placeholder="Informe o valor"
+                    value={value}
+                    onChangeText={(text) => onChange(moneyMask(text))}
+                    onBlur={onBlur}
+                    keyboardType="numeric"
+                    error={form.formState.errors.value !== undefined}
+                  />
+                )}
               />
             </View>
             <View style={styles.radioContainer}>
@@ -93,10 +110,14 @@ export function CreateTransactionModal() {
                   render={({ field: { value, onBlur, onChange } }) => (
                     <Radio
                       onChange={(checked) => {
-                        if (checked) onChange("expense");
+                        if (checked) {
+                          onChange("expense");
+                          form.setValue("category", "");
+                        }
                       }}
                       onBlur={onBlur}
                       checked={value === "expense"}
+                      error={form.formState.errors.type !== undefined}
                     />
                   )}
                 />
@@ -111,10 +132,14 @@ export function CreateTransactionModal() {
                   render={({ field: { value, onBlur, onChange } }) => (
                     <Radio
                       onChange={(checked) => {
-                        if (checked) onChange("income");
+                        if (checked) {
+                          onChange("income");
+                          form.setValue("category", "");
+                        }
                       }}
                       onBlur={onBlur}
                       checked={value === "income"}
+                      error={form.formState.errors.type !== undefined}
                     />
                   )}
                 />
@@ -136,6 +161,7 @@ export function CreateTransactionModal() {
                     options={getCategories(form.watch("type")).map(
                       (category) => ({ key: category.id, value: category.name })
                     )}
+                    error={form.formState.errors.category !== undefined}
                   />
                 )}
               />
@@ -152,6 +178,7 @@ export function CreateTransactionModal() {
                     value={value}
                     onChangeValue={onChange}
                     maximumDate={new Date()}
+                    error={form.formState.errors.date !== undefined}
                   />
                 )}
               />
