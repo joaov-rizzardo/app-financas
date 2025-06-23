@@ -1,6 +1,7 @@
 import { db } from "@/config/firebase";
 import { TransactionModel } from "@/models/transaction.model";
 import {
+  addDoc,
   collection,
   getDocs,
   orderBy,
@@ -8,6 +9,14 @@ import {
   Timestamp,
   where,
 } from "firebase/firestore";
+
+type AddTransactionArgs = {
+  date: Date;
+  description: string;
+  value: number;
+  type: "expense" | "income";
+  category: string;
+};
 
 export class TransactionsService {
   static async getTransactionsByMonth(
@@ -33,6 +42,16 @@ export class TransactionsService {
         ...doc.data(),
       } as TransactionModel;
       return data;
+    });
+  }
+
+  static async addTransaction(args: AddTransactionArgs) {
+    await addDoc(collection(db, "transactions"), {
+      value: args.value,
+      description: args.description,
+      type: args.type,
+      category: args.category,
+      date: Timestamp.fromDate(args.date),
     });
   }
 }

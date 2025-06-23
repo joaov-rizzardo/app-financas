@@ -1,7 +1,11 @@
 import { textPrimaryColor } from "@/constants/colors";
 import { moneyMask } from "@/helpers/money-mask";
+import { useTransactionsQuery } from "@/hooks/queries/use-transactions-query";
 import { useCategory } from "@/hooks/use-category";
+import { TransactionsService } from "@/services/transactions.service";
+import { useErrorModalStore } from "@/store/error-modal-store";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { ScrollView, View } from "react-native";
@@ -41,7 +45,9 @@ const defaultValue: FormTypeInput = {
 
 export function CreateTransactionModal() {
   const [open, setOpen] = useState(false);
+  const errorModal = useErrorModalStore();
   const { getCategories } = useCategory();
+  const query = useTransactionsQuery();
 
   const form = useForm({
     resolver: zodResolver(FormSchema),
@@ -51,8 +57,17 @@ export function CreateTransactionModal() {
   const openModal = useCallback(() => setOpen(true), []);
   const closeModal = useCallback(() => setOpen(false), []);
 
+  const mutation = useMutation({
+    mutationFn: TransactionsService.addTransaction,
+    onSuccess: () => {
+      form.reset();
+      query.refetch();
+    },
+    onError: () => errorModal.open(),
+  });
+
   const onSubmit = (formData: FormTypeOutput) => {
-    console.log(formData);
+    mutation.mutate(formData);
   };
 
   return (
@@ -72,12 +87,19 @@ export function CreateTransactionModal() {
               <Typography color={textPrimaryColor} size={16} weight="400">
                 Descrição
               </Typography>
-              <Input
-                placeholder="Informe a descrição"
-                {...form.register("description")}
-                onChangeText={(text) => form.setValue("description", text)}
-                error={form.formState.errors.description !== undefined}
-                maxLength={20}
+              <Controller
+                control={form.control}
+                name="description"
+                render={({ field: { value, onBlur, onChange } }) => (
+                  <Input
+                    placeholder="Informe a descrição"
+                    value={value}
+                    onChangeText={(text) => onChange(text)}
+                    onBlur={onBlur}
+                    error={form.formState.errors.description !== undefined}
+                    maxLength={20}
+                  />
+                )}
               />
             </View>
             <View style={styles.inputBox}>
@@ -189,8 +211,14 @@ export function CreateTransactionModal() {
           <Button variant="secondary" onPress={closeModal}>
             <Typography>Fechar</Typography>
           </Button>
-          <Button variant="primary" onPress={form.handleSubmit(onSubmit)}>
-            <Typography>Salvar</Typography>
+          <Button
+            variant="primary"
+            onPress={form.handleSubmit(onSubmit)}
+            disabled={mutation.isPending}
+          >
+            <Typography>
+              {!mutation.isPending ? "Salvar" : "Carregando..."}
+            </Typography>
           </Button>
         </View>
       </Modal>
