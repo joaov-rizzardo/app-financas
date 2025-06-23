@@ -3,6 +3,8 @@ import { TransactionModel } from "@/models/transaction.model";
 import {
   addDoc,
   collection,
+  deleteDoc,
+  doc,
   getDocs,
   orderBy,
   query,
@@ -53,5 +55,9 @@ export class TransactionsService {
       category: args.category,
       date: Timestamp.fromDate(args.date),
     });
+  }
+
+  static async removeTransaction(id: string) {
+    await deleteDoc(doc(db, "transactions", id));
   }
 }

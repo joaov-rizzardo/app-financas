@@ -4,10 +4,16 @@ import {
   textSecondaryColor,
 } from "@/constants/colors";
 import { formatDateToLongText } from "@/helpers/format-date-to-long-text";
+import { useTransactionsQuery } from "@/hooks/queries/use-transactions-query";
 import { CategoryModel } from "@/models/category.model";
 import { TransactionModel } from "@/models/transaction.model";
+import { TransactionsService } from "@/services/transactions.service";
+import { useConfirmModalStore } from "@/store/confirm-modal-store";
+import { useErrorModalStore } from "@/store/error-modal-store";
+import { useMutation } from "@tanstack/react-query";
 import { View } from "react-native";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import { ConditionalRender } from "../conditional-render";
 import { Button } from "../ui/button/button.component";
 import { Modal } from "../ui/modal/modal.component";
 import { Typography } from "../ui/typography/typography.component";
@@ -21,11 +27,44 @@ interface TransactionDetailsModalProps {
 }
 
 export function TransactionDetailsModal(props: TransactionDetailsModalProps) {
+  const { open: openConfirmationModal } = useConfirmModalStore();
+  const { open: openErrorModal } = useErrorModalStore();
+  const query = useTransactionsQuery();
+
+  const mutation = useMutation({
+    mutationFn: () =>
+      TransactionsService.removeTransaction(props.transaction.id),
+    onSuccess: () => {
+      props.closeModal();
+      query.refetch();
+    },
+    onError: () => openErrorModal(),
+  });
+
+  const onDelete = () => {
+    openConfirmationModal({
+      title: "Atenção",
+      description: "Tem certeza que deseja cancelar essa transação?",
+      primaryButtonAction: mutation.mutate,
+      primaryButtonText: "Sim",
+      primaryButtonVariant: "danger-outline",
+      secondaryButtonText: "Não",
+    });
+  };
+
+  const isCurrentMonth = () =>
+    props.transaction.date.toDate().getMonth() === new Date().getMonth() &&
+    props.transaction.date.toDate().getFullYear() === new Date().getFullYear();
+
   return (
     <Modal open={props.isOpen} closeModal={props.closeModal}>
       <View style={styles.iconContainer}>
         <View style={styles.icon}>
-          <MaterialIcons name={props.category.icon} size={64} color={brandColor} />
+          <MaterialIcons
+            name={props.category.icon}
+            size={64}
+            color={brandColor}
+          />
         </View>
       </View>
       <View style={styles.detailsContainer}>
@@ -53,9 +92,19 @@ export function TransactionDetailsModal(props: TransactionDetailsModalProps) {
         </Typography>
       </View>
       <View style={styles.actionsContainer}>
-        <Button variant="danger-outline" style={{ width: "100%" }}>
-          <Typography>Cancelar</Typography>
-        </Button>
+        <ConditionalRender condition={isCurrentMonth()}>
+          <Button
+            variant="danger-outline"
+            style={{ width: "100%" }}
+            onPress={onDelete}
+            disabled={mutation.isPending}
+          >
+            <Typography>
+              {!mutation.isPending ? "Cancelar" : "Carregando..."}
+            </Typography>
+          </Button>
+        </ConditionalRender>
+
         <Button variant="secondary" onPress={props.closeModal}>
           <Typography>Fechar</Typography>
         </Button>
