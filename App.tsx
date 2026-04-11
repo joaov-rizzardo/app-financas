@@ -4,6 +4,7 @@ import { enableScreens } from 'react-native-screens';
 import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as NavigationBar from 'expo-navigation-bar';
 import './global.css';
 
@@ -12,6 +13,8 @@ enableScreens(false);
 import { TabNavigator } from '@/navigation/TabNavigator';
 import { colors } from '@/constants/colors';
 
+const queryClient = new QueryClient();
+
 export default function App() {
   useEffect(() => {
     NavigationBar.setBackgroundColorAsync(colors.background.DEFAULT);
@@ -19,6 +22,7 @@ export default function App() {
   }, []);
 
   return (
+    <QueryClientProvider client={queryClient}>
     <SafeAreaProvider>
       <NavigationContainer
         theme={{
@@ -43,5 +47,6 @@ export default function App() {
         <TabNavigator />
       </NavigationContainer>
     </SafeAreaProvider>
+    </QueryClientProvider>
   );
 }

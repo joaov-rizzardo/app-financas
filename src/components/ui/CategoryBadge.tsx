@@ -26,7 +26,7 @@ export function CategoryBadge({
   style,
   ...props
 }: CategoryBadgeProps) {
-  const Icon = (Icons as Record<string, React.ElementType>)[icon] ?? Icons.Tag;
+  const Icon = (Icons as unknown as Record<string, React.ElementType>)[icon] ?? Icons.Tag;
   const d = SIZES[size];
 
   return (

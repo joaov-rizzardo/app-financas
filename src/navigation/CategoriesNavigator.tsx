@@ -11,7 +11,7 @@ type View =
   | { screen: 'form'; category: Category | null; defaultType: TransactionType };
 
 export function CategoriesNavigator() {
-  const { categories, loading, create, update, remove } = useCategories();
+  const { categories, isLoading, error, create, update, remove } = useCategories();
   const [view, setView] = useState<View>({ screen: 'list' });
 
   useEffect(() => {
@@ -44,7 +44,7 @@ export function CategoriesNavigator() {
   return (
     <CategoriesScreen
       categories={categories}
-      loading={loading}
+      isLoading={isLoading}
       onEdit={(cat) =>
         setView({ screen: 'form', category: cat, defaultType: cat.type })
       }

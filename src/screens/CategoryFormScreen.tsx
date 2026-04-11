@@ -8,13 +8,13 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
-  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Icons from 'lucide-react-native';
 import { ChevronLeft, Check, Plus } from 'lucide-react-native';
 import { Text, Label } from '@/components/ui/Text';
 import { Separator } from '@/components/ui/Separator';
+import { ActionButton } from '@/components/ui/ActionButton';
 import { colors } from '@/constants/colors';
 import type { Category, TransactionType } from '@/types/finance';
 
@@ -35,76 +35,6 @@ const CATEGORY_ICONS = [
   'TrendingUp',  'Gift',         'Coins',         'PiggyBank','Building2',   'Tag',
   'Scissors',    'Star',         'Globe',         'Wallet',   'GlassWater',  'Layers',
 ];
-
-// ─── Save button ─────────────────────────────────────────────────────────────
-
-function SaveButton({
-  isEditing,
-  loading,
-  onPress,
-}: {
-  isEditing: boolean;
-  loading: boolean;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      onPress={onPress}
-      disabled={loading}
-      className="active:opacity-75"
-      style={{
-        height: 56,
-        borderRadius: 16,
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: colors.primary.DEFAULT,
-        borderWidth: 1,
-        borderColor: colors.primary[400] + '40',
-        shadowColor: colors.primary.DEFAULT,
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.55,
-        shadowRadius: 22,
-        elevation: 12,
-      }}
-    >
-      {/* Icon zone — subtle dark overlay + right divider */}
-      <View
-        style={{
-          width: 56,
-          alignSelf: 'stretch',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: 'rgba(0,0,0,0.18)',
-          borderRightWidth: 1,
-          borderRightColor: colors.primary[400] + '35',
-        }}
-      >
-        {loading ? (
-          <ActivityIndicator color="#fff" size="small" />
-        ) : isEditing ? (
-          <Check size={20} color="#fff" strokeWidth={2.2} />
-        ) : (
-          <Plus size={20} color="#fff" strokeWidth={2.2} />
-        )}
-      </View>
-
-      {/* Label */}
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <Text
-          style={{
-            color: '#fff',
-            fontSize: 15,
-            fontWeight: '700',
-            letterSpacing: 0.5,
-            fontFamily: 'Inter_700Bold',
-          }}
-        >
-          {loading ? 'Salvando…' : isEditing ? 'Salvar alterações' : 'Criar categoria'}
-        </Text>
-      </View>
-    </Pressable>
-  );
-}
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -138,7 +68,7 @@ export function CategoryFormScreen({
   const [loading, setLoading] = useState(false);
 
   const PreviewIcon =
-    (Icons as Record<string, React.ElementType>)[selectedIcon] ?? Icons.Tag;
+    (Icons as unknown as Record<string, React.ElementType>)[selectedIcon] ?? Icons.Tag;
 
   const handleSave = async () => {
     if (!name.trim()) {
@@ -348,7 +278,7 @@ export function CategoryFormScreen({
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
               {CATEGORY_ICONS.map((iconName) => {
                 const IconComponent =
-                  (Icons as Record<string, React.ElementType>)[iconName] ?? Icons.Tag;
+                  (Icons as unknown as Record<string, React.ElementType>)[iconName] ?? Icons.Tag;
                 const isSelected = selectedIcon === iconName;
                 return (
                   <Pressable
@@ -382,8 +312,9 @@ export function CategoryFormScreen({
           </View>
 
           {/* Save button */}
-          <SaveButton
-            isEditing={isEditing}
+          <ActionButton
+            label={isEditing ? 'Salvar alterações' : 'Criar categoria'}
+            icon={isEditing ? Check : Plus}
             loading={loading}
             onPress={handleSave}
           />

@@ -15,7 +15,7 @@ import type { Category, TransactionType } from '@/types/finance';
 
 interface CategoriesScreenProps {
   categories: Category[];
-  loading: boolean;
+  isLoading: boolean;
   onEdit: (category: Category) => void;
   onCreateNew: (type: TransactionType) => void;
   onDelete: (id: string) => Promise<void>;
@@ -33,7 +33,7 @@ function CategoryCard({
   onLongPress: () => void;
 }) {
   const Icon =
-    (Icons as Record<string, React.ElementType>)[category.icon] ?? Icons.Tag;
+    (Icons as unknown as Record<string, React.ElementType>)[category.icon] ?? Icons.Tag;
 
   return (
     <Pressable
@@ -117,7 +117,7 @@ function EmptyState({
 
 export function CategoriesScreen({
   categories,
-  loading,
+  isLoading,
   onEdit,
   onCreateNew,
   onDelete,
@@ -132,7 +132,7 @@ export function CategoriesScreen({
 
   const handleLongPress = async (cat: Category) => {
     const CategoryIcon =
-      (Icons as Record<string, React.ElementType>)[cat.icon] ?? Icons.Tag;
+      (Icons as unknown as Record<string, React.ElementType>)[cat.icon] ?? Icons.Tag;
 
     const confirmed = await confirm({
       title: `Excluir "${cat.name}"?`,
@@ -192,7 +192,7 @@ export function CategoriesScreen({
         contentContainerClassName="pb-28"
         showsVerticalScrollIndicator={false}
       >
-        {loading ? (
+        {isLoading ? (
           <View style={{ paddingVertical: 40, alignItems: 'center' }}>
             <Text variant="muted">Carregando categorias…</Text>
           </View>

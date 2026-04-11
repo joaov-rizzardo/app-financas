@@ -14,7 +14,6 @@ import { db } from './firebase';
 import type { Category, TransactionType } from '@/types/finance';
 
 const COLLECTION = 'categories';
-const SEEDED_KEY = '@app_financas/categories_seeded_v1';
 
 export const DEFAULT_CATEGORIES: Omit<Category, 'id'>[] = [
   // Income
@@ -32,16 +31,12 @@ export const DEFAULT_CATEGORIES: Omit<Category, 'id'>[] = [
 ];
 
 export async function seedDefaultCategories(): Promise<void> {
-  const seeded = await AsyncStorage.getItem(SEEDED_KEY);
-  if (seeded) return;
-
   const snapshot = await getDocs(collection(db, COLLECTION));
   if (snapshot.empty) {
     await Promise.all(
       DEFAULT_CATEGORIES.map((cat) => addDoc(collection(db, COLLECTION), cat)),
     );
   }
-  await AsyncStorage.setItem(SEEDED_KEY, 'true');
 }
 
 export async function listCategories(type?: TransactionType): Promise<Category[]> {

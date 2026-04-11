@@ -12,7 +12,8 @@
       "Bash(cp -r /tmp/app-financas-temp/assets /c/Users/Joao/www/app-financas/)",
       "Bash(npm install:*)",
       "Bash(xargs grep:*)",
-      "Bash(ls /c/Users/Joao/www/app-financas/*.md)"
+      "Bash(ls /c/Users/Joao/www/app-financas/*.md)",
+      "Bash(grep -r \"LucideIcon\\\\|LucideProps\" node_modules/lucide-react-native/dist/*.d.ts)"
     ]
   }
 }
