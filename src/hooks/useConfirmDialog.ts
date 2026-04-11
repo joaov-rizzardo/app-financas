@@ -15,26 +15,9 @@ type DialogProps = Omit<ConfirmDialogProps, 'onConfirm' | 'onCancel'> & {
   onCancel: () => void;
 };
 
-/**
- * Usage:
- *   const { confirm, dialogProps } = useConfirmDialog();
- *
- *   const deleted = await confirm({
- *     title: 'Excluir item?',
- *     message: 'Esta ação não pode ser desfeita.',
- *     confirmLabel: 'Excluir',
- *     variant: 'danger',
- *     icon: <Trash2 size={28} color={colors.danger} />,
- *   });
- *   if (deleted) { ... }
- *
- *   // In JSX:
- *   <ConfirmDialog {...dialogProps} />
- */
 export function useConfirmDialog() {
   const [visible, setVisible]   = useState(false);
   const [options, setOptions]   = useState<ConfirmOptions>({ title: '' });
-  // useRef avoids the React setState-as-updater trap with function values
   const resolveRef = useRef<((result: boolean) => void) | null>(null);
 
   const confirm = useCallback((opts: ConfirmOptions): Promise<boolean> => {

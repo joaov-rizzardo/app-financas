@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { useState, useMemo } from 'react';
-import { View, ScrollView, Pressable } from 'react-native';
+import { useState, useMemo, useEffect, useRef } from 'react';
+import { View, ScrollView, Pressable, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Icons from 'lucide-react-native';
 import { Plus, Tag, Settings2, Trash2 } from 'lucide-react-native';
@@ -19,6 +19,71 @@ interface CategoriesScreenProps {
   onEdit: (category: Category) => void;
   onCreateNew: (type: TransactionType) => void;
   onDelete: (id: string) => Promise<void>;
+}
+
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
+
+function SkeletonCard() {
+  const opacity = useRef(new Animated.Value(0.4)).current;
+
+  useEffect(() => {
+    const pulse = Animated.loop(
+      Animated.sequence([
+        Animated.timing(opacity, { toValue: 1, duration: 700, useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 0.4, duration: 700, useNativeDriver: true }),
+      ]),
+    );
+    pulse.start();
+    return () => pulse.stop();
+  }, [opacity]);
+
+  return (
+    <Animated.View
+      style={{
+        opacity,
+        width: '48%',
+        marginBottom: 12,
+        backgroundColor: colors.background.elevated,
+        borderRadius: 18,
+        padding: 16,
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: colors.border.DEFAULT,
+      }}
+    >
+      {/* Icon placeholder */}
+      <View
+        style={{
+          width: 56,
+          height: 56,
+          borderRadius: 16,
+          backgroundColor: colors.background.card,
+          marginBottom: 12,
+        }}
+      />
+      {/* Name placeholder */}
+      <View
+        style={{
+          width: 64,
+          height: 12,
+          borderRadius: 6,
+          backgroundColor: colors.background.card,
+        }}
+      />
+    </Animated.View>
+  );
+}
+
+const SKELETON_COUNT = 6;
+
+function CategoryGridSkeleton() {
+  return (
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+      {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
+        <SkeletonCard key={i} />
+      ))}
+    </View>
+  );
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -193,9 +258,7 @@ export function CategoriesScreen({
         showsVerticalScrollIndicator={false}
       >
         {isLoading ? (
-          <View style={{ paddingVertical: 40, alignItems: 'center' }}>
-            <Text variant="muted">Carregando categorias…</Text>
-          </View>
+          <CategoryGridSkeleton />
         ) : filtered.length === 0 ? (
           <EmptyState
             type={activeType}
