@@ -1,42 +1,49 @@
-import { useState, useEffect, useCallback } from 'react';
-import { getTransactions } from '@/services/transactions';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  listTransactions,
+  createTransaction,
+  updateTransaction,
+  deleteTransaction,
+} from '@/services/transactions';
 import type { Transaction } from '@/types/finance';
 
-interface UseTransactionsResult {
-  transactions: Transaction[];
-  loading: boolean;
-  error: Error | null;
-  refetch: () => void;
-}
+export const TRANSACTIONS_QUERY_KEY = ['transactions'] as const;
 
-/**
- * Fetches transactions for a given user from Firestore.
- *
- * @example
- * const { transactions, loading } = useTransactions('user-id-123');
- */
-export function useTransactions(userId: string): UseTransactionsResult {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+export function useTransactions(month?: string) {
+  // month: 'YYYY-MM'
+  const queryClient = useQueryClient();
 
-  const fetch = useCallback(async () => {
-    if (!userId) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await getTransactions(userId);
-      setTransactions(data);
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Unknown error'));
-    } finally {
-      setLoading(false);
-    }
-  }, [userId]);
+  const from = month ? `${month}-01` : undefined;
+  const to   = month ? `${month}-31` : undefined;
 
-  useEffect(() => {
-    fetch();
-  }, [fetch]);
+  const { data: transactions = [], isLoading, error } = useQuery({
+    queryKey: [...TRANSACTIONS_QUERY_KEY, month ?? 'all'],
+    queryFn: () => listTransactions(from && to ? { from, to } : undefined),
+  });
 
-  return { transactions, loading, error, refetch: fetch };
+  const createMutation = useMutation({
+    mutationFn: createTransaction,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: TRANSACTIONS_QUERY_KEY }),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<Omit<Transaction, 'id' | 'createdAt'>> }) =>
+      updateTransaction(id, data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: TRANSACTIONS_QUERY_KEY }),
+  });
+
+  const removeMutation = useMutation({
+    mutationFn: deleteTransaction,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: TRANSACTIONS_QUERY_KEY }),
+  });
+
+  return {
+    transactions,
+    isLoading,
+    error: error ? 'Erro ao carregar lançamentos' : null,
+    create: createMutation.mutateAsync,
+    update: (id: string, data: Partial<Omit<Transaction, 'id' | 'createdAt'>>) =>
+      updateMutation.mutateAsync({ id, data }),
+    remove: removeMutation.mutateAsync,
+  };
 }

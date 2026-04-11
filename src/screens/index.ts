@@ -6,3 +6,4 @@ export * from './DashboardScreen';
 export * from './GoalsScreen';
 export * from './ReportsScreen';
 export * from './TransactionsScreen';
+export * from './TransactionFormScreen';

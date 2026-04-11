@@ -46,11 +46,17 @@ export async function getTransactionById(id: string): Promise<Transaction | null
   return { id: snapshot.id, ...snapshot.data() } as Transaction;
 }
 
+function stripUndefined<T extends object>(obj: T): Partial<T> {
+  return Object.fromEntries(
+    Object.entries(obj).filter(([, v]) => v !== undefined),
+  ) as Partial<T>;
+}
+
 export async function createTransaction(
   data: Omit<Transaction, 'id' | 'createdAt'>,
 ): Promise<string> {
   const ref = await addDoc(collection(db, COLLECTION), {
-    ...data,
+    ...stripUndefined(data),
     createdAt: new Date().toISOString(),
   });
   return ref.id;
@@ -60,7 +66,7 @@ export async function updateTransaction(
   id: string,
   data: Partial<Omit<Transaction, 'id' | 'createdAt'>>,
 ): Promise<void> {
-  await updateDoc(doc(db, COLLECTION, id), data);
+  await updateDoc(doc(db, COLLECTION, id), stripUndefined(data));
 }
 
 export async function deleteTransaction(id: string): Promise<void> {

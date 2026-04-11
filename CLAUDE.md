@@ -77,12 +77,45 @@
 | Rota | Componente | Label | Ícone |
 |---|---|---|---|
 | `Dashboard` | `DashboardScreen` | Início | `LayoutDashboard` |
-| `Lançamentos` | `TransactionsScreen` | Lançamentos | `ArrowLeftRight` |
+| `Lançamentos` | `TransactionsNavigator` | Lançamentos | `ArrowLeftRight` |
 | `Cartão` | `CreditCardScreen` | Cartão | `CreditCard` |
 | `Orçamentos` | `BudgetsScreen` | Orçamentos | `PieChart` |
 | `Metas` | `GoalsScreen` | Metas | `Target` |
 | `Relatórios` | `ReportsScreen` | Relatórios | `BarChart2` |
 | `Categorias` | `CategoriesNavigator` | Categorias | `Tags` |
+
+---
+
+## Módulo de Lançamentos
+
+### Arquitetura
+- `TransactionsNavigator` — controla navegação entre lista e formulário (mesmo padrão do `CategoriesNavigator`)
+- `TransactionsScreen` — listagem com seletor de mês, filtros, swipe-to-delete
+- `TransactionFormScreen` — criação/edição com todos os campos
+- `useTransactions(month?)` — hook React Query; `month` no formato `YYYY-MM`
+
+### Padrões do formulário
+- **Máscara de valor**: entrada em centavos (inteiros), dividida por 100 para exibição; armazenada como `number` no Firestore
+- **Bottom sheet de categoria**: `Modal` animado com `Animated.Value` translateY — mesmo padrão do `ConfirmDialog`
+- **Seletor de data**: modal com botões ± por componente (dia / mês / ano)
+- **Recorrente e parcelado são mutuamente exclusivos** — ativar um desativa o outro
+- **Swipe-to-delete**: `PanResponder` + `Animated.Value` translateX; limiar de 72px para acionar `ConfirmDialog`
+
+### Coleção Firestore `transactions`
+```
+{
+  type: 'income' | 'expense'
+  amount: number          // valor positivo sempre
+  date: string            // ISO 8601 (YYYY-MM-DD)
+  categoryId: string
+  description: string
+  isRecurring: boolean
+  recurringId?: string
+  installmentTotal?: number
+  installmentCurrent?: number
+  createdAt: string       // ISO 8601
+}
+```
 
 ---
 
