@@ -7,6 +7,7 @@ export type TabParamList = {
   Orçamentos: undefined;
   Metas: undefined;
   Relatórios: undefined;
+  Categorias: undefined;
 };
 
 export type TabScreenProps<T extends keyof TabParamList> = BottomTabScreenProps<

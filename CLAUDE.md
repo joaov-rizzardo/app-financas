@@ -38,25 +38,30 @@ app-financas/
 ├── src/
 │   ├── components/
 │   │   └── ui/               # Componentes primitivos reutilizáveis
-│   │       ├── Badge.tsx     # Badge, DotBadge
-│   │       ├── Button.tsx    # Button, Chip
-│   │       ├── Card.tsx      # Card, CardHeader, CardContent, CardFooter, StatCard, StatRow
+│   │       ├── Badge.tsx         # Badge, DotBadge
+│   │       ├── Button.tsx        # Button, Chip
+│   │       ├── Card.tsx          # Card, CardHeader, CardContent, CardFooter, StatCard, StatRow
+│   │       ├── CategoryBadge.tsx # CategoryBadge — ícone + nome com cor dinâmica
 │   │       ├── Separator.tsx
-│   │       ├── Text.tsx      # Text, Label
+│   │       ├── Text.tsx          # Text, Label
 │   │       └── index.ts
 │   ├── constants/
 │   │   ├── colors.ts         # Tokens de cor — fonte única da verdade
 │   │   ├── theme.ts          # Tokens de espaçamento, raio, tipografia
 │   │   └── index.ts
 │   ├── hooks/
+│   │   ├── useCategories.ts
 │   │   ├── useTransactions.ts
 │   │   └── index.ts
 │   ├── lib/
 │   │   └── utils.ts          # cn(), formatCurrency(), formatShortDate(), toPercent(), etc.
 │   ├── navigation/
+│   │   ├── CategoriesNavigator.tsx  # Navegador estado (list ↔ form) para Categorias
 │   │   ├── TabNavigator.tsx
 │   │   └── index.ts
 │   ├── screens/
+│   │   ├── CategoriesScreen.tsx    # Listagem com tabs Receitas/Despesas
+│   │   ├── CategoryFormScreen.tsx  # Criar/editar categoria (nome, cor, ícone)
 │   │   ├── DashboardScreen.tsx
 │   │   ├── TransactionsScreen.tsx
 │   │   ├── CreditCardScreen.tsx
@@ -65,6 +70,7 @@ app-financas/
 │   │   ├── ReportsScreen.tsx
 │   │   └── index.ts
 │   ├── services/
+│   │   ├── categories.ts     # CRUD de categorias + seedDefaultCategories()
 │   │   ├── firebase.ts       # Inicialização do app Firebase
 │   │   ├── transactions.ts   # CRUD de transações no Firestore
 │   │   └── index.ts
@@ -196,6 +202,7 @@ As 6 abas do bottom tab:
 | `Orçamentos` | `BudgetsScreen` | Orçamentos | `PieChart` |
 | `Metas` | `GoalsScreen` | Metas | `Target` |
 | `Relatórios` | `ReportsScreen` | Relatórios | `BarChart2` |
+| `Categorias` | `CategoriesNavigator` | Categorias | `Tags` |
 
 ---
 
@@ -244,6 +251,15 @@ Variantes: `primary | accent | secondary | outline | ghost | destructive`
 <DotBadge label="Receitas" color={colors.success} />
 ```
 
+### `CategoryBadge`
+Componente reutilizável para exibir ícone + nome de uma categoria com a cor da categoria.
+```tsx
+<CategoryBadge icon="Utensils" color="#f97316" name="Alimentação" />
+<CategoryBadge icon="Briefcase" color="#10b981" name="Salário" size="lg" />
+<CategoryBadge icon="Car" color="#f59e0b" name="Transporte" showLabel={false} />
+```
+Props: `icon` (lucide icon name), `color` (hex), `name`, `size` (`sm|md|lg`), `showLabel` (default `true`).
+
 ---
 
 ## Padrões de design por tela
@@ -280,6 +296,13 @@ Variantes: `primary | accent | secondary | outline | ghost | destructive`
 - Card de poupança líquida com barra de savings rate.
 - Gráfico de barras manual (Views) com meses e legenda.
 - Breakdown por categoria com barras coloridas e percentuais.
+
+### Categorias (Categories)
+- `CategoriesNavigator` — navegador baseado em estado (sem stack navigator extra): alterna entre `CategoriesScreen` e `CategoryFormScreen`.
+- `CategoriesScreen` — grid 2 colunas com chips Despesas/Receitas para filtrar; FAB (+) no canto inferior; long-press abre Alert com opções Editar/Excluir.
+- `CategoryFormScreen` — preview do ícone + cor no topo; seletor de tipo (Despesa/Receita); input de nome; paleta de 16 cores (círculos com check); grid de 36 ícones lucide; botão salvar.
+- Seeding automático de 10 categorias padrão (4 receita, 6 despesa) via `seedDefaultCategories()` — usa AsyncStorage para executar apenas uma vez.
+- `useCategories(type?)` — hook com CRUD otimista; `type` é opcional para filtrar por tipo.
 
 ---
 

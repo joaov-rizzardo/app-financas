@@ -9,6 +9,7 @@ import {
   PieChart,
   Target,
   BarChart2,
+  Tags,
 } from 'lucide-react-native';
 import { colors } from '@/constants/colors';
 import {
@@ -19,6 +20,7 @@ import {
   GoalsScreen,
   ReportsScreen,
 } from '@/screens';
+import { CategoriesNavigator } from './CategoriesNavigator';
 import type { TabParamList } from '@/types/navigation';
 
 const Tab = createBottomTabNavigator<TabParamList>();
@@ -56,12 +58,13 @@ const TAB_SCREENS: {
   icon: React.ElementType;
   label: string;
 }[] = [
-  { name: 'Dashboard',    component: DashboardScreen,    icon: LayoutDashboard, label: 'Início' },
-  { name: 'Lançamentos',  component: TransactionsScreen, icon: ArrowLeftRight,  label: 'Lançamentos' },
-  { name: 'Cartão',       component: CreditCardScreen,   icon: CreditCard,      label: 'Cartão' },
-  { name: 'Orçamentos',   component: BudgetsScreen,      icon: PieChart,        label: 'Orçamentos' },
-  { name: 'Metas',        component: GoalsScreen,        icon: Target,          label: 'Metas' },
-  { name: 'Relatórios',   component: ReportsScreen,      icon: BarChart2,       label: 'Relatórios' },
+  { name: 'Dashboard',    component: DashboardScreen,      icon: LayoutDashboard, label: 'Início' },
+  { name: 'Lançamentos',  component: TransactionsScreen,   icon: ArrowLeftRight,  label: 'Lançamentos' },
+  { name: 'Cartão',       component: CreditCardScreen,     icon: CreditCard,      label: 'Cartão' },
+  { name: 'Orçamentos',   component: BudgetsScreen,        icon: PieChart,        label: 'Orçamentos' },
+  { name: 'Metas',        component: GoalsScreen,          icon: Target,          label: 'Metas' },
+  { name: 'Relatórios',   component: ReportsScreen,        icon: BarChart2,       label: 'Relatórios' },
+  { name: 'Categorias',   component: CategoriesNavigator,  icon: Tags,            label: 'Categorias' },
 ];
 
 export function TabNavigator() {

@@ -1,4 +1,6 @@
 export * from './BudgetsScreen';
+export * from './CategoriesScreen';
+export * from './CategoryFormScreen';
 export * from './CreditCardScreen';
 export * from './DashboardScreen';
 export * from './GoalsScreen';
