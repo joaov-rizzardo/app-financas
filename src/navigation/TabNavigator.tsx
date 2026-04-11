@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   LayoutDashboard,
   ArrowLeftRight,
@@ -64,6 +65,8 @@ const TAB_SCREENS: {
 ];
 
 export function TabNavigator() {
+  const insets = useSafeAreaInsets();
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => {
@@ -81,8 +84,8 @@ export function TabNavigator() {
             backgroundColor: colors.background.surface,
             borderTopColor: colors.border.DEFAULT,
             borderTopWidth: 1,
-            height: 68,
-            paddingBottom: 12,
+            height: 68 + insets.bottom,
+            paddingBottom: insets.bottom,
             paddingTop: 6,
           },
           tabBarLabelStyle: {

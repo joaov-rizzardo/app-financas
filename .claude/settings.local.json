@@ -10,7 +10,8 @@
       "Bash(cp /tmp/app-financas-temp/App.tsx /c/Users/Joao/www/app-financas/)",
       "Bash(cp /tmp/app-financas-temp/index.ts /c/Users/Joao/www/app-financas/)",
       "Bash(cp -r /tmp/app-financas-temp/assets /c/Users/Joao/www/app-financas/)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(xargs grep:*)"
     ]
   }
 }

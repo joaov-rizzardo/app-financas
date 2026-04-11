@@ -1,8 +1,10 @@
 import * as React from 'react';
+import { useEffect } from 'react';
 import { enableScreens } from 'react-native-screens';
 import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import * as NavigationBar from 'expo-navigation-bar';
 import './global.css';
 
 // Must be called before any Screen component is rendered
@@ -11,6 +13,11 @@ import { TabNavigator } from '@/navigation/TabNavigator';
 import { colors } from '@/constants/colors';
 
 export default function App() {
+  useEffect(() => {
+    NavigationBar.setBackgroundColorAsync(colors.background.DEFAULT);
+    NavigationBar.setButtonStyleAsync('light');
+  }, []);
+
   return (
     <SafeAreaProvider>
       <NavigationContainer
