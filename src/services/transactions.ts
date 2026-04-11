@@ -4,35 +4,54 @@ import {
   updateDoc,
   deleteDoc,
   doc,
+  getDoc,
+  getDocs,
+  orderBy,
   query,
   where,
-  orderBy,
-  getDocs,
-  Timestamp,
 } from 'firebase/firestore';
 import { db } from './firebase';
 import type { Transaction } from '@/types/finance';
 
 const COLLECTION = 'transactions';
 
-export async function getTransactions(userId: string): Promise<Transaction[]> {
-  const q = query(
-    collection(db, COLLECTION),
-    where('userId', '==', userId),
-    orderBy('date', 'desc'),
-  );
+export async function listTransactions(filters?: {
+  type?: Transaction['type'];
+  categoryId?: string;
+  from?: string;
+  to?: string;
+}): Promise<Transaction[]> {
+  let q = query(collection(db, COLLECTION), orderBy('date', 'desc'));
+
+  if (filters?.type) {
+    q = query(q, where('type', '==', filters.type));
+  }
+  if (filters?.categoryId) {
+    q = query(q, where('categoryId', '==', filters.categoryId));
+  }
+  if (filters?.from) {
+    q = query(q, where('date', '>=', filters.from));
+  }
+  if (filters?.to) {
+    q = query(q, where('date', '<=', filters.to));
+  }
+
   const snapshot = await getDocs(q);
   return snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as Transaction));
 }
 
-export async function addTransaction(
-  data: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>,
+export async function getTransactionById(id: string): Promise<Transaction | null> {
+  const snapshot = await getDoc(doc(db, COLLECTION, id));
+  if (!snapshot.exists()) return null;
+  return { id: snapshot.id, ...snapshot.data() } as Transaction;
+}
+
+export async function createTransaction(
+  data: Omit<Transaction, 'id' | 'createdAt'>,
 ): Promise<string> {
-  const now = new Date().toISOString();
   const ref = await addDoc(collection(db, COLLECTION), {
     ...data,
-    createdAt: now,
-    updatedAt: now,
+    createdAt: new Date().toISOString(),
   });
   return ref.id;
 }
@@ -41,10 +60,7 @@ export async function updateTransaction(
   id: string,
   data: Partial<Omit<Transaction, 'id' | 'createdAt'>>,
 ): Promise<void> {
-  await updateDoc(doc(db, COLLECTION, id), {
-    ...data,
-    updatedAt: new Date().toISOString(),
-  });
+  await updateDoc(doc(db, COLLECTION, id), data);
 }
 
 export async function deleteTransaction(id: string): Promise<void> {

@@ -83,6 +83,86 @@ O tema foi definido como padrão em três camadas:
 
 ---
 
+## Modelo de dados (Firestore)
+
+Cada coleção e seus campos. Campos opcionais marcados com `?`.
+
+### `transactions`
+| Campo | Tipo | Descrição |
+|---|---|---|
+| `id` | `string` | Gerado pelo Firestore |
+| `type` | `"income" \| "expense"` | Tipo da transação |
+| `amount` | `number` | Valor em reais |
+| `date` | `string` | ISO 8601 |
+| `categoryId` | `string` | Ref para `categories` |
+| `description` | `string` | Descrição livre |
+| `isRecurring` | `boolean` | Gerada por item recorrente? |
+| `recurringId?` | `string` | Ref para `recurringItems` |
+| `installmentTotal?` | `number` | Total de parcelas |
+| `installmentCurrent?` | `number` | Parcela atual |
+| `createdAt` | `string` | ISO 8601 |
+
+### `categories`
+| Campo | Tipo | Descrição |
+|---|---|---|
+| `id` | `string` | Gerado pelo Firestore |
+| `name` | `string` | Nome exibido |
+| `icon` | `string` | Nome do ícone lucide-react-native |
+| `color` | `string` | Hex color |
+| `type` | `"income" \| "expense"` | Tipo da categoria |
+
+### `budgets`
+| Campo | Tipo | Descrição |
+|---|---|---|
+| `id` | `string` | Gerado pelo Firestore |
+| `categoryId` | `string` | Ref para `categories` |
+| `amount` | `number` | Limite do orçamento |
+| `month` | `string` | `YYYY-MM` |
+
+### `goals`
+| Campo | Tipo | Descrição |
+|---|---|---|
+| `id` | `string` | Gerado pelo Firestore |
+| `name` | `string` | Nome da meta |
+| `targetAmount` | `number` | Valor alvo |
+| `currentAmount` | `number` | Valor poupado até agora |
+| `deadline` | `string` | ISO 8601 |
+| `createdAt` | `string` | ISO 8601 |
+
+### `recurringItems`
+| Campo | Tipo | Descrição |
+|---|---|---|
+| `id` | `string` | Gerado pelo Firestore |
+| `type` | `"income" \| "expense"` | Tipo |
+| `amount` | `number` | Valor |
+| `categoryId` | `string` | Ref para `categories` |
+| `description` | `string` | Descrição |
+| `frequency` | `"monthly" \| "weekly"` | Frequência de geração |
+| `startDate` | `string` | ISO 8601 |
+| `lastGeneratedAt?` | `string` | ISO 8601 — última geração |
+
+### `creditCardExpenses`
+| Campo | Tipo | Descrição |
+|---|---|---|
+| `id` | `string` | Gerado pelo Firestore |
+| `amount` | `number` | Valor da compra |
+| `description` | `string` | Descrição |
+| `categoryId` | `string` | Ref para `categories` |
+| `date` | `string` | ISO 8601 |
+| `installmentTotal` | `number` | Total de parcelas |
+| `installmentCurrent` | `number` | Parcela atual |
+| `invoiceMonth` | `string` | `YYYY-MM` — fatura alvo |
+
+### `creditCardConfig`
+Documento único com ID `"default"`.
+
+| Campo | Tipo | Descrição |
+|---|---|---|
+| `closingDay` | `number` | Dia de fechamento da fatura (1–31) |
+| `dueDay` | `number` | Dia de vencimento da fatura (1–31) |
+
+---
+
 ## Configuração do Firebase
 
 1. Copie `.env.example` para `.env`:

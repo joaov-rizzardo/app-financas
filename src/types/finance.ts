@@ -1,58 +1,67 @@
-export type TransactionType = 'income' | 'expense' | 'transfer';
-
-export type TransactionCategory =
-  | 'salary'
-  | 'food'
-  | 'transport'
-  | 'health'
-  | 'entertainment'
-  | 'education'
-  | 'housing'
-  | 'clothing'
-  | 'other';
+export type TransactionType = 'income' | 'expense';
+export type Frequency = 'monthly' | 'weekly';
 
 export interface Transaction {
   id: string;
   type: TransactionType;
-  category: TransactionCategory;
   amount: number;
-  description: string;
   date: string; // ISO 8601
-  accountId: string;
-  userId: string;
-  createdAt: string;
-  updatedAt: string;
+  categoryId: string;
+  description: string;
+  isRecurring: boolean;
+  recurringId?: string;
+  installmentTotal?: number;
+  installmentCurrent?: number;
+  createdAt: string; // ISO 8601
 }
 
-export interface Account {
+export interface Category {
   id: string;
   name: string;
-  type: 'checking' | 'savings' | 'credit' | 'investment';
-  balance: number;
-  currency: string;
-  userId: string;
-  createdAt: string;
-  updatedAt: string;
+  icon: string; // lucide-react-native icon name
+  color: string; // hex color
+  type: TransactionType;
 }
 
 export interface Budget {
   id: string;
-  category: TransactionCategory;
-  limitAmount: number;
-  spentAmount: number;
-  period: 'monthly' | 'weekly';
-  userId: string;
-  createdAt: string;
+  categoryId: string;
+  amount: number;
+  month: string; // YYYY-MM
 }
 
 export interface Goal {
   id: string;
-  title: string;
-  description?: string;
+  name: string;
   targetAmount: number;
   currentAmount: number;
-  deadline?: string;
-  userId: string;
-  createdAt: string;
-  updatedAt: string;
+  deadline: string; // ISO 8601
+  createdAt: string; // ISO 8601
+}
+
+export interface RecurringItem {
+  id: string;
+  type: TransactionType;
+  amount: number;
+  categoryId: string;
+  description: string;
+  frequency: Frequency;
+  startDate: string; // ISO 8601
+  lastGeneratedAt?: string; // ISO 8601
+}
+
+export interface CreditCardExpense {
+  id: string;
+  amount: number;
+  description: string;
+  categoryId: string;
+  date: string; // ISO 8601
+  installmentTotal: number;
+  installmentCurrent: number;
+  invoiceMonth: string; // YYYY-MM
+}
+
+export interface CreditCardConfig {
+  closingDay: number; // 1–31
+  dueDay: number; // 1–31
 }
