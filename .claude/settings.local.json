@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx:*)",
+      "Bash(cp:*)",
+      "Bash(cp /tmp/app-financas-temp/package.json /c/Users/Joao/www/app-financas/)",
+      "Bash(cp /tmp/app-financas-temp/package-lock.json /c/Users/Joao/www/app-financas/)",
+      "Bash(cp /tmp/app-financas-temp/app.json /c/Users/Joao/www/app-financas/)",
+      "Bash(cp /tmp/app-financas-temp/tsconfig.json /c/Users/Joao/www/app-financas/)",
+      "Bash(cp /tmp/app-financas-temp/App.tsx /c/Users/Joao/www/app-financas/)",
+      "Bash(cp /tmp/app-financas-temp/index.ts /c/Users/Joao/www/app-financas/)",
+      "Bash(cp -r /tmp/app-financas-temp/assets /c/Users/Joao/www/app-financas/)",
+      "Bash(npm install:*)"
+    ]
+  }
+}
