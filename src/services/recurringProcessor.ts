@@ -67,12 +67,25 @@ function buildTransactionDate(item: RecurringItem): string {
   return now.toISOString().substring(0, 10);
 }
 
-/** True if the installment series is complete after this generation. */
+/**
+ * Returns the installment number that will be generated next.
+ * installmentCurrent in the RecurringItem tracks the last generated number,
+ * so the next one is always +1.
+ */
+function nextInstallmentNumber(item: RecurringItem): number {
+  return (item.installmentCurrent ?? 0) + 1;
+}
+
+/**
+ * True if the installment about to be generated is the last one.
+ * Uses nextInstallmentNumber so the RecurringItem is deleted after the correct
+ * transaction is written — not one cycle too early or too late.
+ */
 function isLastInstallment(item: RecurringItem): boolean {
   return (
     item.installmentTotal != null &&
     item.installmentCurrent != null &&
-    item.installmentCurrent >= item.installmentTotal
+    nextInstallmentNumber(item) >= item.installmentTotal
   );
 }
 
@@ -150,7 +163,7 @@ async function generateTransactionForItem(item: RecurringItem): Promise<void> {
     recurringId: item.id,
     ...(isInstallment && {
       installmentTotal: item.installmentTotal,
-      installmentCurrent: (item.installmentCurrent || 0) + 1,
+      installmentCurrent: nextInstallmentNumber(item),
     }),
   });
 }
