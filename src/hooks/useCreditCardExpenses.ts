@@ -42,7 +42,7 @@ export function useCreditCardExpenses(invoiceMonth?: string) {
       const invoiceMonthComputed = getInvoiceMonth(input.date, input.closingDay);
 
       if (input.expenseType === 'subscription') {
-        // Assinatura mensal recorrente no cartão
+        // Registra a assinatura para gerar nas próximas faturas
         await createRecurringCardItem({
           type: 'subscription',
           amount: input.amount,
@@ -51,6 +51,16 @@ export function useCreditCardExpenses(invoiceMonth?: string) {
           startInvoiceMonth: invoiceMonthComputed,
           lastGeneratedInvoiceMonth: invoiceMonthComputed,
           createdAt: now,
+        });
+        // Cria o gasto da fatura atual imediatamente
+        await createCreditCardExpense({
+          amount: input.amount,
+          description: input.description,
+          categoryId: input.categoryId,
+          date: input.date,
+          installmentTotal: 1,
+          installmentCurrent: 1,
+          invoiceMonth: invoiceMonthComputed,
         });
         return;
       }
