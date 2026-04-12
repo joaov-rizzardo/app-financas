@@ -25,7 +25,9 @@
 - Variantes de componentes usam `cva`.
 - Imports sempre via alias `@/` (nunca caminhos relativos longos).
 - Dados mock em constantes no topo do arquivo, fora do componente.
-- Sub-componentes locais no mesmo arquivo, acima da função principal.
+- **Organização de sub-componentes de tela:**
+  - 1–2 sub-componentes simples: mesmo arquivo, acima da função principal.
+  - 3+ sub-componentes: organizar como pasta (`ScreenName/index.tsx`), cada sub-componente em seu próprio arquivo dentro da pasta. A interface de props do screen deve ser exportada (`export interface`). Helpers e constantes exclusivos da tela ficam no `index.tsx`.
 
 ---
 
