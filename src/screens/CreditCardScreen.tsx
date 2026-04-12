@@ -9,11 +9,11 @@ import {
   Settings,
   Plus,
   Tag,
-  AlertCircle,
-  Calendar,
   RefreshCw,
   Lock,
   CheckCircle,
+  Trash2,
+  Pencil,
 } from 'lucide-react-native';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Text, Label } from '@/components/ui/Text';
@@ -48,6 +48,8 @@ export interface CreditCardScreenProps {
   onSettings: () => void;
   onViewRecurring: () => void;
   onClose: () => Promise<void>;
+  onEdit: (expense: CreditCardExpense) => void;
+  onDelete: (expense: CreditCardExpense) => void;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -386,10 +388,16 @@ function ExpenseRow({
   expense,
   category,
   isLast,
+  isClosed,
+  onEdit,
+  onLongPress,
 }: {
   expense: CreditCardExpense;
   category?: Category;
   isLast: boolean;
+  isClosed: boolean;
+  onEdit: () => void;
+  onLongPress: () => void;
 }) {
   const Icon = category
     ? (Icons as unknown as Record<string, React.ElementType>)[category.icon] ?? Tag
@@ -400,7 +408,12 @@ function ExpenseRow({
 
   return (
     <>
-      <View className="flex-row items-center py-3.5">
+      <Pressable
+        onPress={isClosed ? undefined : onEdit}
+        onLongPress={isClosed ? undefined : onLongPress}
+        className="active:opacity-70"
+        style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 14 }}
+      >
         <View
           style={{
             width: 40, height: 40, borderRadius: 12,
@@ -425,10 +438,12 @@ function ExpenseRow({
             {category?.name ?? 'Sem categoria'} · {formatShortDate(expense.date)}
           </Text>
         </View>
-        <Text size="sm" weight="semibold" className="text-danger">
-          -{formatCurrency(expense.amount)}
-        </Text>
-      </View>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <Text size="sm" weight="semibold" className="text-danger">
+            -{formatCurrency(expense.amount)}
+          </Text>
+        </View>
+      </Pressable>
       {!isLast && <Separator />}
     </>
   );
@@ -449,12 +464,15 @@ export function CreditCardScreen({
   onSettings,
   onViewRecurring,
   onClose,
+  onEdit,
+  onDelete,
 }: CreditCardScreenProps) {
   const invoiceTotal = expenses.reduce((sum, e) => sum + e.amount, 0);
   const dueDate = config ? getInvoiceDueDate(invoiceMonth, config.dueDay) : null;
   const grouped = groupByDate(expenses);
   const [closeDialogVisible, setCloseDialogVisible] = React.useState(false);
   const [isClosing, setIsClosing] = React.useState(false);
+  const [deleteTarget, setDeleteTarget] = React.useState<CreditCardExpense | null>(null);
 
   const categoryMap = React.useMemo(() => {
     const map = new Map<string, Category>();
@@ -488,6 +506,22 @@ export function CreditCardScreen({
         isLoading={isClosing}
         onConfirm={handleCloseInvoice}
         onCancel={() => { if (!isClosing) setCloseDialogVisible(false); }}
+      />
+      <ConfirmDialog
+        visible={deleteTarget !== null}
+        title="Excluir gasto"
+        message={`Deseja excluir "${deleteTarget?.description}"?\n\nEsta ação não pode ser desfeita.`}
+        confirmLabel="Excluir"
+        cancelLabel="Cancelar"
+        variant="danger"
+        icon={<Trash2 size={24} color={colors.danger} />}
+        onConfirm={() => {
+          if (deleteTarget) {
+            onDelete(deleteTarget);
+            setDeleteTarget(null);
+          }
+        }}
+        onCancel={() => setDeleteTarget(null)}
       />
       <ScrollView
         className="flex-1"
@@ -678,6 +712,9 @@ export function CreditCardScreen({
                         expense={exp}
                         category={categoryMap.get(exp.categoryId)}
                         isLast={idx === dayExpenses.length - 1 && dateStr === grouped[grouped.length - 1][0]}
+                        isClosed={isClosed}
+                        onEdit={() => onEdit(exp)}
+                        onLongPress={() => setDeleteTarget(exp)}
                       />
                     ))}
                     {dateStr !== grouped[grouped.length - 1][0] && <Separator />}

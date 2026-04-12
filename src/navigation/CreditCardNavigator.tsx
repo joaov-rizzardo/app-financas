@@ -14,7 +14,7 @@ import { CreditCardRecurringItemFormScreen } from '@/screens/CreditCardRecurring
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type View = 'main' | 'form' | 'config' | 'recurring' | 'recurringEdit';
+type View = 'main' | 'form' | 'edit' | 'config' | 'recurring' | 'recurringEdit';
 
 function currentInvoiceMonth(): string {
   const d = new Date();
@@ -27,9 +27,10 @@ export function CreditCardNavigator() {
   const [view, setView] = useState<View>('main');
   const [invoiceMonth, setInvoiceMonth] = useState(currentInvoiceMonth);
   const [editingItem, setEditingItem] = React.useState<import('@/types/finance').RecurringCardItem | null>(null);
+  const [editingExpense, setEditingExpense] = React.useState<import('@/types/finance').CreditCardExpense | null>(null);
 
   const { config } = useCreditCardConfig();
-  const { expenses, isLoading, create } = useCreditCardExpenses(invoiceMonth);
+  const { expenses, isLoading, create, update, remove } = useCreditCardExpenses(invoiceMonth);
   const { categories } = useCategories();
   const { items: recurringItems, isLoading: recurringLoading, error: recurringError, remove: removeRecurringItem, update: updateRecurringItem } = useRecurringCardItems();
   const { payment, close: closeInvoice } = useCreditCardInvoice(invoiceMonth);
@@ -46,6 +47,23 @@ export function CreditCardNavigator() {
     });
     return () => sub.remove();
   }, [view]);
+
+  if (view === 'edit' && editingExpense) {
+    return (
+      <CreditCardExpenseFormScreen
+        categories={categories}
+        config={config}
+        initialExpense={editingExpense}
+        onCreate={async () => {}}
+        onUpdate={async (id, data) => {
+          await update({ id, data });
+          setEditingExpense(null);
+          setView('main');
+        }}
+        onBack={() => { setEditingExpense(null); setView('main'); }}
+      />
+    );
+  }
 
   if (view === 'config') {
     return <CreditCardConfigScreen onBack={() => setView('main')} />;
@@ -108,6 +126,8 @@ export function CreditCardNavigator() {
       onSettings={() => setView('config')}
       onViewRecurring={() => setView('recurring')}
       onClose={async () => { await closeInvoice({ expenses, categoryId: '' }); }}
+      onEdit={(expense) => { setEditingExpense(expense); setView('edit'); }}
+      onDelete={async (expense) => { await remove(expense.id); }}
     />
   );
 }

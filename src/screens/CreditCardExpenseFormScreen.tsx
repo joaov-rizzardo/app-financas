@@ -31,7 +31,7 @@ import { Separator } from '@/components/ui/Separator';
 import { ActionButton } from '@/components/ui/ActionButton';
 import { colors } from '@/constants/colors';
 import { formatDate, getInvoiceMonth, formatInvoiceMonth } from '@/lib/utils';
-import type { Category, CreditCardConfig } from '@/types/finance';
+import type { Category, CreditCardConfig, CreditCardExpense } from '@/types/finance';
 import type { CreateExpenseInput, ExpenseType } from '@/hooks/useCreditCardExpenses';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -79,6 +79,8 @@ interface Props {
   config: CreditCardConfig | null;
   onCreate: (input: CreateExpenseInput) => Promise<void>;
   onBack: () => void;
+  initialExpense?: CreditCardExpense;
+  onUpdate?: (id: string, data: Partial<Omit<CreditCardExpense, 'id'>>) => Promise<void>;
 }
 
 // ─── DatePickerModal ──────────────────────────────────────────────────────────
@@ -305,12 +307,18 @@ function CategoryPickerModal({
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
-export function CreditCardExpenseFormScreen({ categories, config, onCreate, onBack }: Props) {
-  const [amountCents, setAmountCents] = useState(0);
-  const [amountDisplay, setAmountDisplay] = useState('');
-  const [description, setDescription] = useState('');
-  const [categoryId, setCategoryId] = useState('');
-  const [date, setDate] = useState(todayISO);
+export function CreditCardExpenseFormScreen({ categories, config, onCreate, onBack, initialExpense, onUpdate }: Props) {
+  const isEditMode = initialExpense !== undefined;
+
+  const [amountCents, setAmountCents] = useState(() =>
+    initialExpense ? Math.round(initialExpense.amount * 100) : 0,
+  );
+  const [amountDisplay, setAmountDisplay] = useState(() =>
+    initialExpense ? parseCentsToDisplay(Math.round(initialExpense.amount * 100)) : '',
+  );
+  const [description, setDescription] = useState(() => initialExpense?.description ?? '');
+  const [categoryId, setCategoryId] = useState(() => initialExpense?.categoryId ?? '');
+  const [date, setDate] = useState(() => initialExpense?.date ?? todayISO());
   const [expenseType, setExpenseType] = useState<ExpenseType>('single');
   const [installmentTotal, setInstallmentTotal] = useState(2);
   const [loading, setLoading] = useState(false);
@@ -338,22 +346,35 @@ export function CreditCardExpenseFormScreen({ categories, config, onCreate, onBa
       Alert.alert('Categoria obrigatória', 'Selecione uma categoria.');
       return;
     }
-    if (!config) {
-      Alert.alert('Cartão não configurado', 'Configure o cartão antes de adicionar gastos.');
-      return;
-    }
 
     setLoading(true);
     try {
-      await onCreate({
-        amount: amountCents / 100,
-        description: description.trim() || (selectedCategory?.name ?? 'Gasto no cartão'),
-        categoryId,
-        date,
-        expenseType,
-        installmentTotal: expenseType === 'installment' ? installmentTotal : undefined,
-        closingDay: config.closingDay,
-      });
+      if (isEditMode && onUpdate && initialExpense) {
+        const updatedInvoiceMonth = config
+          ? getInvoiceMonth(date, config.closingDay)
+          : date.substring(0, 7);
+        await onUpdate(initialExpense.id, {
+          amount: amountCents / 100,
+          description: description.trim() || (selectedCategory?.name ?? 'Gasto no cartão'),
+          categoryId,
+          date,
+          invoiceMonth: updatedInvoiceMonth,
+        });
+      } else {
+        if (!config) {
+          Alert.alert('Cartão não configurado', 'Configure o cartão antes de adicionar gastos.');
+          return;
+        }
+        await onCreate({
+          amount: amountCents / 100,
+          description: description.trim() || (selectedCategory?.name ?? 'Gasto no cartão'),
+          categoryId,
+          date,
+          expenseType,
+          installmentTotal: expenseType === 'installment' ? installmentTotal : undefined,
+          closingDay: config.closingDay,
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -386,7 +407,7 @@ export function CreditCardExpenseFormScreen({ categories, config, onCreate, onBa
             <ArrowLeft size={18} color={colors.text.secondary} />
           </Pressable>
           <View className="flex-1">
-            <Label>Novo gasto</Label>
+            <Label>{isEditMode ? 'Editar gasto' : 'Novo gasto'}</Label>
             <Text size="xl" weight="bold" className="mt-0.5">Cartão de Crédito</Text>
           </View>
           <View
@@ -466,70 +487,72 @@ export function CreditCardExpenseFormScreen({ categories, config, onCreate, onBa
             )}
           </View>
 
-          {/* Expense type */}
-          <View
-            style={{
-              backgroundColor: colors.background.surface,
-              borderRadius: 16, marginBottom: 16,
-              borderWidth: 1, borderColor: colors.border.DEFAULT,
-              overflow: 'hidden',
-            }}
-          >
-            {EXPENSE_TYPES.map((et, idx) => {
-              const Icon = et.icon;
-              const selected = expenseType === et.key;
-              return (
-                <React.Fragment key={et.key}>
-                  {idx > 0 && <Separator />}
-                  <Pressable
-                    onPress={() => setExpenseType(et.key)}
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      paddingHorizontal: 16,
-                      paddingVertical: 14,
-                      gap: 12,
-                      backgroundColor: selected ? colors.primary.DEFAULT + '10' : 'transparent',
-                    }}
-                    className="active:opacity-70"
-                  >
-                    <View
+          {/* Expense type — hidden in edit mode */}
+          {!isEditMode && (
+            <View
+              style={{
+                backgroundColor: colors.background.surface,
+                borderRadius: 16, marginBottom: 16,
+                borderWidth: 1, borderColor: colors.border.DEFAULT,
+                overflow: 'hidden',
+              }}
+            >
+              {EXPENSE_TYPES.map((et, idx) => {
+                const Icon = et.icon;
+                const selected = expenseType === et.key;
+                return (
+                  <React.Fragment key={et.key}>
+                    {idx > 0 && <Separator />}
+                    <Pressable
+                      onPress={() => setExpenseType(et.key)}
                       style={{
-                        width: 36, height: 36, borderRadius: 10,
-                        backgroundColor: selected ? colors.primary.DEFAULT + '25' : colors.background.card,
-                        alignItems: 'center', justifyContent: 'center',
-                        borderWidth: 1,
-                        borderColor: selected ? colors.primary.DEFAULT + '50' : colors.border.DEFAULT,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        paddingHorizontal: 16,
+                        paddingVertical: 14,
+                        gap: 12,
+                        backgroundColor: selected ? colors.primary.DEFAULT + '10' : 'transparent',
                       }}
+                      className="active:opacity-70"
                     >
-                      <Icon size={16} color={selected ? colors.primary[400] : colors.text.muted} />
-                    </View>
-                    <View className="flex-1">
-                      <Text size="sm" weight={selected ? 'semibold' : 'medium'}
-                        style={{ color: selected ? colors.primary[300] : colors.text.primary }}>
-                        {et.label}
-                      </Text>
-                      <Text size="xs" variant="muted">{et.description}</Text>
-                    </View>
-                    <View
-                      style={{
-                        width: 20, height: 20, borderRadius: 10,
-                        borderWidth: 2,
-                        borderColor: selected ? colors.primary.DEFAULT : colors.border.DEFAULT,
-                        backgroundColor: selected ? colors.primary.DEFAULT : 'transparent',
-                        alignItems: 'center', justifyContent: 'center',
-                      }}
-                    >
-                      {selected && <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#fff' }} />}
-                    </View>
-                  </Pressable>
-                </React.Fragment>
-              );
-            })}
-          </View>
+                      <View
+                        style={{
+                          width: 36, height: 36, borderRadius: 10,
+                          backgroundColor: selected ? colors.primary.DEFAULT + '25' : colors.background.card,
+                          alignItems: 'center', justifyContent: 'center',
+                          borderWidth: 1,
+                          borderColor: selected ? colors.primary.DEFAULT + '50' : colors.border.DEFAULT,
+                        }}
+                      >
+                        <Icon size={16} color={selected ? colors.primary[400] : colors.text.muted} />
+                      </View>
+                      <View className="flex-1">
+                        <Text size="sm" weight={selected ? 'semibold' : 'medium'}
+                          style={{ color: selected ? colors.primary[300] : colors.text.primary }}>
+                          {et.label}
+                        </Text>
+                        <Text size="xs" variant="muted">{et.description}</Text>
+                      </View>
+                      <View
+                        style={{
+                          width: 20, height: 20, borderRadius: 10,
+                          borderWidth: 2,
+                          borderColor: selected ? colors.primary.DEFAULT : colors.border.DEFAULT,
+                          backgroundColor: selected ? colors.primary.DEFAULT : 'transparent',
+                          alignItems: 'center', justifyContent: 'center',
+                        }}
+                      >
+                        {selected && <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#fff' }} />}
+                      </View>
+                    </Pressable>
+                  </React.Fragment>
+                );
+              })}
+            </View>
+          )}
 
           {/* Installment stepper */}
-          {expenseType === 'installment' && (
+          {!isEditMode && expenseType === 'installment' && (
             <View
               style={{
                 backgroundColor: colors.background.surface,
@@ -696,7 +719,7 @@ export function CreditCardExpenseFormScreen({ categories, config, onCreate, onBa
           </View>
 
           <ActionButton
-            label="Adicionar gasto"
+            label={isEditMode ? 'Salvar alterações' : 'Adicionar gasto'}
             icon={CreditCard}
             onPress={handleSubmit}
             loading={loading}
