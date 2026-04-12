@@ -4,6 +4,7 @@ export * from './CategoryFormScreen';
 export * from './CreditCardScreen';
 export * from './DashboardScreen';
 export * from './GoalsScreen';
+export * from './RecurringItemsScreen';
 export * from './ReportsScreen';
 export * from './TransactionsScreen';
 export * from './TransactionFormScreen';

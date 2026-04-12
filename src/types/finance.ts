@@ -48,6 +48,8 @@ export interface RecurringItem {
   frequency: Frequency;
   startDate: string; // ISO 8601
   lastGeneratedAt?: string; // ISO 8601
+  installmentTotal?: number;
+  installmentCurrent?: number;
 }
 
 export interface CreditCardExpense {

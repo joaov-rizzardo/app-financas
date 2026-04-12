@@ -21,6 +21,7 @@ import {
   Calendar,
   Tag,
   ChevronDown,
+  ChevronUp,
   RefreshCw,
   CreditCard,
   X,
@@ -83,7 +84,7 @@ function centsToAmount(cents: number): number {
 interface TransactionFormScreenProps {
   transaction: Transaction | null;
   categories: Category[];
-  onCreate: (data: Omit<Transaction, 'id' | 'createdAt'>) => Promise<void>;
+  onCreate: (data: Omit<Transaction, 'id' | 'createdAt'>, frequency?: Frequency) => Promise<void>;
   onUpdate: (id: string, data: Partial<Omit<Transaction, 'id' | 'createdAt'>>) => Promise<void>;
   onBack: () => void;
 }
@@ -186,14 +187,14 @@ function DatePickerModal({
               <Label className="mb-3">Dia</Label>
               <Pressable onPress={() => changeDay(1)} className="active:opacity-70"
                 style={stepBtn}>
-                <ChevronRight size={18} color={colors.text.secondary} style={{ transform: [{ rotate: '-90deg' }] }} />
+                <ChevronUp size={18} color={colors.text.secondary} />
               </Pressable>
               <Text size="xl" weight="bold" style={{ marginVertical: 12, minWidth: 36, textAlign: 'center' }}>
                 {String(day).padStart(2, '0')}
               </Text>
               <Pressable onPress={() => changeDay(-1)} className="active:opacity-70"
                 style={stepBtn}>
-                <ChevronRight size={18} color={colors.text.secondary} style={{ transform: [{ rotate: '90deg' }] }} />
+                <ChevronDown size={18} color={colors.text.secondary}  />
               </Pressable>
             </View>
 
@@ -204,14 +205,14 @@ function DatePickerModal({
               <Label className="mb-3">Mês</Label>
               <Pressable onPress={() => changeMonth(1)} className="active:opacity-70"
                 style={stepBtn}>
-                <ChevronRight size={18} color={colors.text.secondary} style={{ transform: [{ rotate: '-90deg' }] }} />
+                <ChevronUp size={18} color={colors.text.secondary} />
               </Pressable>
               <Text size="base" weight="bold" style={{ marginVertical: 12, textAlign: 'center' }}>
                 {MONTH_NAMES[month - 1]}
               </Text>
               <Pressable onPress={() => changeMonth(-1)} className="active:opacity-70"
                 style={stepBtn}>
-                <ChevronRight size={18} color={colors.text.secondary} style={{ transform: [{ rotate: '90deg' }] }} />
+                <ChevronDown size={18} color={colors.text.secondary}  />
               </Pressable>
             </View>
 
@@ -222,14 +223,14 @@ function DatePickerModal({
               <Label className="mb-3">Ano</Label>
               <Pressable onPress={() => changeYear(1)} className="active:opacity-70"
                 style={stepBtn}>
-                <ChevronRight size={18} color={colors.text.secondary} style={{ transform: [{ rotate: '-90deg' }] }} />
+                <ChevronUp size={18} color={colors.text.secondary}  />
               </Pressable>
               <Text size="base" weight="bold" style={{ marginVertical: 12, textAlign: 'center' }}>
                 {year}
               </Text>
               <Pressable onPress={() => changeYear(-1)} className="active:opacity-70"
                 style={stepBtn}>
-                <ChevronRight size={18} color={colors.text.secondary} style={{ transform: [{ rotate: '90deg' }] }} />
+                <ChevronDown size={18} color={colors.text.secondary} />
               </Pressable>
             </View>
           </View>
@@ -493,7 +494,7 @@ export function TransactionFormScreen({
       if (isEditing) {
         await onUpdate(transaction.id, payload);
       } else {
-        await onCreate(payload);
+        await onCreate(payload, isRecurring && !isInstallment ? frequency : undefined);
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erro desconhecido.';

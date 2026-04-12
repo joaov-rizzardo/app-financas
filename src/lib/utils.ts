@@ -14,7 +14,6 @@ export function formatCurrency(value: number): string {
   }).format(Math.abs(value));
 }
 
-/** Format a number as compact BRL (e.g. R$ 5,8k). */
 export function formatCurrencyCompact(value: number): string {
   if (Math.abs(value) >= 1000) {
     return `R$ ${(Math.abs(value) / 1000).toFixed(1)}k`;
@@ -22,21 +21,19 @@ export function formatCurrencyCompact(value: number): string {
   return formatCurrency(value);
 }
 
-/** Format ISO date string to short label like "Apr 10". */
 export function formatShortDate(dateStr: string): string {
-  return new Intl.DateTimeFormat('en-US', {
+  return new Intl.DateTimeFormat('pt-BR', {
     month: 'short',
     day: 'numeric',
-  }).format(new Date(dateStr));
+  }).format(new Date(dateStr + "T00:00:00"));
 }
 
-/** Format ISO date to full date like "April 10, 2026". */
 export function formatDate(dateStr: string): string {
-  return new Intl.DateTimeFormat('en-US', {
+  return new Intl.DateTimeFormat('pt-BR', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
-  }).format(new Date(dateStr));
+  }).format(new Date(dateStr + "T00:00:00"));
 }
 
 /** Return the signed prefix for an amount (+/-). */
