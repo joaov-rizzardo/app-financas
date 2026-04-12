@@ -7,14 +7,16 @@ import { useRecurringItems } from '@/hooks/useRecurringItems';
 import { TransactionsScreen } from '@/screens/TransactionsScreen';
 import { TransactionFormScreen } from '@/screens/TransactionFormScreen';
 import { RecurringItemsScreen } from '@/screens/RecurringItemsScreen';
-import type { Transaction } from '@/types/finance';
+import { RecurringItemFormScreen } from '@/screens/RecurringItemFormScreen';
+import type { Transaction, RecurringItem } from '@/types/finance';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type View =
   | { screen: 'list' }
   | { screen: 'form'; transaction: Transaction | null }
-  | { screen: 'recurring' };
+  | { screen: 'recurring' }
+  | { screen: 'recurringEdit'; item: RecurringItem };
 
 function currentMonth(): string {
   const d = new Date();
@@ -29,16 +31,34 @@ export function TransactionsNavigator() {
 
   const { transactions, isLoading, error, create, update, remove } = useTransactions(month);
   const { categories } = useCategories();
-  const { recurringItems, isLoading: recurringLoading, error: recurringError, remove: cancelRecurring } = useRecurringItems();
+  const { recurringItems, isLoading: recurringLoading, error: recurringError, remove: cancelRecurring, update: updateRecurringItem } = useRecurringItems();
 
   useEffect(() => {
     if (view.screen === 'list') return;
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
-      setView({ screen: 'list' });
+      if (view.screen === 'recurringEdit') {
+        setView({ screen: 'recurring' });
+      } else {
+        setView({ screen: 'list' });
+      }
       return true;
     });
     return () => sub.remove();
   }, [view.screen]);
+
+  if (view.screen === 'recurringEdit') {
+    return (
+      <RecurringItemFormScreen
+        item={view.item}
+        categories={categories}
+        onSave={async (id, data) => {
+          await updateRecurringItem(id, data);
+          setView({ screen: 'recurring' });
+        }}
+        onBack={() => setView({ screen: 'recurring' })}
+      />
+    );
+  }
 
   if (view.screen === 'recurring') {
     return (
@@ -49,6 +69,7 @@ export function TransactionsNavigator() {
         error={recurringError}
         onBack={() => setView({ screen: 'list' })}
         onCancel={cancelRecurring}
+        onEdit={(item) => setView({ screen: 'recurringEdit', item })}
       />
     );
   }

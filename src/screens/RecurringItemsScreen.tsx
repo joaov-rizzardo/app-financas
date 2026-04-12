@@ -40,6 +40,7 @@ interface RecurringItemsScreenProps {
   error: string | null;
   onBack: () => void;
   onCancel: (id: string) => Promise<void>;
+  onEdit: (item: RecurringItem) => void;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -131,11 +132,13 @@ function RecurringItemRow({
   category,
   isLast,
   onCancelRequest,
+  onEdit,
 }: {
   item: RecurringItem;
   category: Category | undefined;
   isLast: boolean;
   onCancelRequest: () => void;
+  onEdit: () => void;
 }) {
   const translateX = useRef(new Animated.Value(0)).current;
 
@@ -198,6 +201,7 @@ function RecurringItemRow({
 
         <Animated.View style={{ transform: [{ translateX }], backgroundColor: colors.background.surface }}>
           <Pressable
+            onPress={onEdit}
             onLongPress={onCancelRequest}
             delayLongPress={450}
             className="active:opacity-75"
@@ -254,9 +258,11 @@ function RecurringItemRow({
             </View>
 
             {/* Amount */}
-            <Text size="sm" weight="bold" style={{ color: amountColor }}>
-              {isIncome ? '+' : '-'}{formatCurrency(item.amount)}
-            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <Text size="sm" weight="bold" style={{ color: amountColor }}>
+                {isIncome ? '+' : '-'}{formatCurrency(item.amount)}
+              </Text>
+            </View>
           </Pressable>
         </Animated.View>
       </View>
@@ -349,6 +355,7 @@ export function RecurringItemsScreen({
   error,
   onBack,
   onCancel,
+  onEdit,
 }: RecurringItemsScreenProps) {
   const { confirm, dialogProps, setLoading, close } = useConfirmDialog();
 
@@ -403,7 +410,7 @@ export function RecurringItemsScreen({
         </Pressable>
         <View style={{ flex: 1 }}>
           <Text size="xl" weight="bold">Recorrentes</Text>
-          <Text size="xs" variant="muted">Segure para cancelar · deslize para excluir</Text>
+          <Text size="xs" variant="muted">Toque para editar · segure para cancelar</Text>
         </View>
       </View>
 
@@ -461,6 +468,7 @@ export function RecurringItemsScreen({
                   category={getCategoryById(item.categoryId)}
                   isLast={i === expenseItems.length - 1}
                   onCancelRequest={() => handleCancelRequest(item)}
+                  onEdit={() => onEdit(item)}
                 />
               ))}
             </Card>
@@ -479,6 +487,7 @@ export function RecurringItemsScreen({
                   category={getCategoryById(item.categoryId)}
                   isLast={i === incomeItems.length - 1}
                   onCancelRequest={() => handleCancelRequest(item)}
+                  onEdit={() => onEdit(item)}
                 />
               ))}
             </Card>
