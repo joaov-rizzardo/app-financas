@@ -14,13 +14,13 @@ import {
 import { colors } from '@/constants/colors';
 import {
   DashboardScreen,
-  CreditCardScreen,
   BudgetsScreen,
   GoalsScreen,
   ReportsScreen,
 } from '@/screens';
 import { CategoriesNavigator } from './CategoriesNavigator';
 import { TransactionsNavigator } from './TransactionsNavigator';
+import { CreditCardNavigator } from './CreditCardNavigator';
 import type { TabParamList } from '@/types/navigation';
 
 const Tab = createBottomTabNavigator<TabParamList>();
@@ -60,7 +60,7 @@ const TAB_SCREENS: {
 }[] = [
   { name: 'Dashboard',    component: DashboardScreen,      icon: LayoutDashboard, label: 'Início' },
   { name: 'Lançamentos',  component: TransactionsNavigator, icon: ArrowLeftRight,  label: 'Lançamentos' },
-  { name: 'Cartão',       component: CreditCardScreen,     icon: CreditCard,      label: 'Cartão' },
+  { name: 'Cartão',       component: CreditCardNavigator,  icon: CreditCard,      label: 'Cartão' },
   { name: 'Orçamentos',   component: BudgetsScreen,        icon: PieChart,        label: 'Orçamentos' },
   { name: 'Metas',        component: GoalsScreen,          icon: Target,          label: 'Metas' },
   { name: 'Relatórios',   component: ReportsScreen,        icon: BarChart2,       label: 'Relatórios' },

@@ -6,7 +6,6 @@ import {
   doc,
   getDoc,
   getDocs,
-  orderBy,
   query,
   where,
 } from 'firebase/firestore';
@@ -16,16 +15,15 @@ import type { CreditCardExpense } from '@/types/finance';
 const COLLECTION = 'creditCardExpenses';
 
 export async function listCreditCardExpenses(invoiceMonth?: string): Promise<CreditCardExpense[]> {
+  // Avoid composite index requirement by not mixing where() + orderBy() on different fields.
+  // Sort client-side instead.
   const q = invoiceMonth
-    ? query(
-        collection(db, COLLECTION),
-        where('invoiceMonth', '==', invoiceMonth),
-        orderBy('date', 'desc'),
-      )
-    : query(collection(db, COLLECTION), orderBy('date', 'desc'));
+    ? query(collection(db, COLLECTION), where('invoiceMonth', '==', invoiceMonth))
+    : query(collection(db, COLLECTION));
 
   const snapshot = await getDocs(q);
-  return snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as CreditCardExpense));
+  const items = snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as CreditCardExpense));
+  return items.sort((a, b) => b.date.localeCompare(a.date));
 }
 
 export async function getCreditCardExpenseById(id: string): Promise<CreditCardExpense | null> {

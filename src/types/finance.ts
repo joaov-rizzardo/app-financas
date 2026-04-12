@@ -50,6 +50,7 @@ export interface RecurringItem {
   lastGeneratedAt?: string; // ISO 8601
   installmentTotal?: number;
   installmentCurrent?: number;
+  isCreditCard?: boolean; // true → processor generates CreditCardExpense instead of Transaction
 }
 
 export interface CreditCardExpense {
@@ -66,4 +67,5 @@ export interface CreditCardExpense {
 export interface CreditCardConfig {
   closingDay: number; // 1–31
   dueDay: number; // 1–31
+  limit?: number; // optional card limit for UI display
 }

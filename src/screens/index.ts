@@ -3,6 +3,8 @@ export * from './RecurringProcessingScreen';
 export * from './CategoriesScreen';
 export * from './CategoryFormScreen';
 export * from './CreditCardScreen';
+export * from './CreditCardConfigScreen';
+export * from './CreditCardExpenseFormScreen';
 export * from './DashboardScreen';
 export * from './GoalsScreen';
 export * from './RecurringItemsScreen';

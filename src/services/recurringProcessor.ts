@@ -1,5 +1,8 @@
 import { listRecurringItems, updateRecurringItem, deleteRecurringItem } from './recurringItems';
 import { createTransaction } from './transactions';
+import { createCreditCardExpense } from './creditCardExpenses';
+import { getCreditCardConfig } from './creditCardConfig';
+import { getInvoiceMonth } from '@/lib/utils';
 import type { RecurringItem } from '@/types/finance';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -151,6 +154,26 @@ export async function processRecurringItems(
 // ─── Private helpers ──────────────────────────────────────────────────────────
 
 async function generateTransactionForItem(item: RecurringItem): Promise<void> {
+  if (item.isCreditCard) {
+    const config = await getCreditCardConfig();
+    const today = new Date().toISOString().substring(0, 10);
+    const invoiceMonth = config
+      ? getInvoiceMonth(today, config.closingDay)
+      : today.substring(0, 7);
+    const installmentCurrent = nextInstallmentNumber(item);
+
+    await createCreditCardExpense({
+      amount: item.amount,
+      description: item.description,
+      categoryId: item.categoryId,
+      date: today,
+      installmentTotal: item.installmentTotal ?? 1,
+      installmentCurrent,
+      invoiceMonth,
+    });
+    return;
+  }
+
   const isInstallment = item.installmentTotal != null && item.installmentTotal > 1;
 
   await createTransaction({
