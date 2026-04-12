@@ -14,6 +14,7 @@ import { TabNavigator } from '@/navigation/TabNavigator';
 import { colors } from '@/constants/colors';
 import { RecurringProcessingScreen, type ProcessingProgress } from '@/screens/RecurringProcessingScreen';
 import { hasPendingRecurringItems, processRecurringItems } from '@/services/recurringProcessor';
+import { hasPendingCardRecurringItems, processCardRecurringItems } from '@/services/creditCardRecurringProcessor';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -44,15 +45,19 @@ export default function App() {
   useEffect(() => {
     async function runStartupCheck() {
       try {
-        const hasPending = await hasPendingRecurringItems();
+        const [hasPending, hasPendingCard] = await Promise.all([
+          hasPendingRecurringItems(),
+          hasPendingCardRecurringItems(),
+        ]);
 
-        if (!hasPending) {
+        if (!hasPending && !hasPendingCard) {
           setShowApp(true);
           return;
         }
 
         setStatus('processing');
-        await processRecurringItems(handleProgress);
+        if (hasPending) await processRecurringItems(handleProgress);
+        if (hasPendingCard) await processCardRecurringItems(handleProgress);
         setStatus('ready');
 
         // Brief success display before handing off to the app
