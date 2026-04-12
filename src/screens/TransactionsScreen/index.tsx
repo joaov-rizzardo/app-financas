@@ -67,7 +67,12 @@ function groupByDate(transactions: Transaction[]): [string, Transaction[]][] {
     if (!map.has(tx.date)) map.set(tx.date, []);
     map.get(tx.date)!.push(tx);
   }
-  return Array.from(map.entries()).sort(([a], [b]) => b.localeCompare(a));
+  return Array.from(map.entries())
+    .sort(([a], [b]) => b.localeCompare(a))
+    .map(([date, txs]) => [
+      date,
+      txs.sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+    ] as [string, Transaction[]]);
 }
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
