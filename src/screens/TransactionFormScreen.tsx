@@ -36,7 +36,8 @@ import type { Category, Transaction, TransactionType, Frequency } from '@/types/
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function todayISO(): string {
-  return new Date().toISOString().split('T')[0];
+  const d = new Date();
+  return buildISO(d.getDate(), d.getMonth() + 1, d.getFullYear());
 }
 
 function currentMonthYear(): { year: number; month: number } {
