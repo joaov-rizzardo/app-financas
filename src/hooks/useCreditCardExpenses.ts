@@ -5,7 +5,8 @@ import {
   updateCreditCardExpense,
   deleteCreditCardExpense,
 } from '@/services/creditCardExpenses';
-import { createRecurringItem } from '@/services/recurringItems';
+import { createRecurringCardItem } from '@/services/recurringCardItems';
+import { RECURRING_CARD_ITEMS_QUERY_KEY } from './useRecurringCardItems';
 import type { CreditCardExpense } from '@/types/finance';
 import { getInvoiceMonth } from '@/lib/utils';
 
@@ -19,8 +20,8 @@ export interface CreateExpenseInput {
   categoryId: string;
   date: string; // YYYY-MM-DD
   expenseType: ExpenseType;
-  installmentTotal?: number; // required when expenseType === 'installment'
-  closingDay: number; // needed to compute invoiceMonth
+  installmentTotal?: number; // obrigatório quando expenseType === 'installment'
+  closingDay: number; // necessário para calcular invoiceMonth
 }
 
 export function useCreditCardExpenses(invoiceMonth?: string) {
@@ -37,40 +38,38 @@ export function useCreditCardExpenses(invoiceMonth?: string) {
 
   const createMutation = useMutation({
     mutationFn: async (input: CreateExpenseInput) => {
-      const today = new Date().toISOString().substring(0, 10);
+      const now = new Date().toISOString();
+      const invoiceMonthComputed = getInvoiceMonth(input.date, input.closingDay);
 
       if (input.expenseType === 'subscription') {
-        // Monthly recurring subscription on the credit card
-        await createRecurringItem({
-          type: 'expense',
+        // Assinatura mensal recorrente no cartão
+        await createRecurringCardItem({
+          type: 'subscription',
           amount: input.amount,
           categoryId: input.categoryId,
           description: input.description,
-          frequency: 'monthly',
-          startDate: today,
-          lastGeneratedAt: new Date().toISOString(),
-          isCreditCard: true,
+          startInvoiceMonth: invoiceMonthComputed,
+          lastGeneratedInvoiceMonth: invoiceMonthComputed,
+          createdAt: now,
         });
         return;
       }
 
       if (input.expenseType === 'installment' && (input.installmentTotal ?? 0) > 1) {
-        // Create a RecurringItem so the processor generates one expense per invoice month
-        await createRecurringItem({
-          type: 'expense',
+        // Cria o RecurringCardItem para gerar as parcelas seguintes
+        await createRecurringCardItem({
+          type: 'installment',
           amount: input.amount,
           categoryId: input.categoryId,
           description: input.description,
-          frequency: 'monthly',
-          startDate: today,
-          lastGeneratedAt: new Date().toISOString(),
+          startInvoiceMonth: invoiceMonthComputed,
+          lastGeneratedInvoiceMonth: invoiceMonthComputed,
           installmentTotal: input.installmentTotal,
           installmentCurrent: 1,
-          isCreditCard: true,
+          createdAt: now,
         });
 
-        // Also create the first installment immediately for the current invoice
-        const computed = getInvoiceMonth(input.date, input.closingDay);
+        // Cria a primeira parcela imediatamente na fatura correta
         await createCreditCardExpense({
           amount: input.amount,
           description: input.description,
@@ -78,13 +77,12 @@ export function useCreditCardExpenses(invoiceMonth?: string) {
           date: input.date,
           installmentTotal: input.installmentTotal!,
           installmentCurrent: 1,
-          invoiceMonth: computed,
+          invoiceMonth: invoiceMonthComputed,
         });
         return;
       }
 
-      // Single one-time purchase
-      const computed = getInvoiceMonth(input.date, input.closingDay);
+      // Compra à vista
       await createCreditCardExpense({
         amount: input.amount,
         description: input.description,
@@ -92,11 +90,12 @@ export function useCreditCardExpenses(invoiceMonth?: string) {
         date: input.date,
         installmentTotal: 1,
         installmentCurrent: 1,
-        invoiceMonth: computed,
+        invoiceMonth: invoiceMonthComputed,
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: CREDIT_CARD_EXPENSES_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: RECURRING_CARD_ITEMS_QUERY_KEY });
     },
   });
 

@@ -50,7 +50,21 @@ export interface RecurringItem {
   lastGeneratedAt?: string; // ISO 8601
   installmentTotal?: number;
   installmentCurrent?: number;
-  isCreditCard?: boolean; // true → processor generates CreditCardExpense instead of Transaction
+}
+
+export type RecurringCardType = 'subscription' | 'installment';
+
+export interface RecurringCardItem {
+  id: string;
+  type: RecurringCardType;
+  amount: number;
+  categoryId: string;
+  description: string;
+  startInvoiceMonth: string; // YYYY-MM — primeira fatura
+  lastGeneratedInvoiceMonth?: string; // YYYY-MM — última fatura gerada
+  installmentTotal?: number; // apenas para type === 'installment'
+  installmentCurrent?: number; // apenas para type === 'installment'
+  createdAt: string; // ISO 8601
 }
 
 export interface CreditCardExpense {
