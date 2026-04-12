@@ -4,13 +4,15 @@ import { BackHandler } from 'react-native';
 import { useCreditCardExpenses } from '@/hooks/useCreditCardExpenses';
 import { useCreditCardConfig } from '@/hooks/useCreditCardConfig';
 import { useCategories } from '@/hooks/useCategories';
+import { useRecurringCardItems } from '@/hooks/useRecurringCardItems';
 import { CreditCardScreen } from '@/screens/CreditCardScreen';
 import { CreditCardExpenseFormScreen } from '@/screens/CreditCardExpenseFormScreen';
 import { CreditCardConfigScreen } from '@/screens/CreditCardConfigScreen';
+import { CreditCardRecurringScreen } from '@/screens/CreditCardRecurringScreen';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type View = 'main' | 'form' | 'config';
+type View = 'main' | 'form' | 'config' | 'recurring';
 
 function currentInvoiceMonth(): string {
   const d = new Date();
@@ -26,6 +28,7 @@ export function CreditCardNavigator() {
   const { config } = useCreditCardConfig();
   const { expenses, isLoading, create } = useCreditCardExpenses(invoiceMonth);
   const { categories } = useCategories();
+  const { items: recurringItems, isLoading: recurringLoading, error: recurringError, remove: removeRecurringItem } = useRecurringCardItems();
 
   useEffect(() => {
     if (view === 'main') return;
@@ -38,6 +41,19 @@ export function CreditCardNavigator() {
 
   if (view === 'config') {
     return <CreditCardConfigScreen onBack={() => setView('main')} />;
+  }
+
+  if (view === 'recurring') {
+    return (
+      <CreditCardRecurringScreen
+        items={recurringItems}
+        categories={categories}
+        isLoading={recurringLoading}
+        error={recurringError ? String(recurringError) : null}
+        onBack={() => setView('main')}
+        onCancel={async (id) => { await removeRecurringItem(id); }}
+      />
+    );
   }
 
   if (view === 'form') {
@@ -61,9 +77,11 @@ export function CreditCardNavigator() {
       config={config}
       isLoading={isLoading}
       invoiceMonth={invoiceMonth}
+      recurringCount={recurringItems.length}
       onMonthChange={setInvoiceMonth}
       onAdd={() => setView('form')}
       onSettings={() => setView('config')}
+      onViewRecurring={() => setView('recurring')}
     />
   );
 }

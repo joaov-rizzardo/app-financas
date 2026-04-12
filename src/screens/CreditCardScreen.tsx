@@ -11,6 +11,7 @@ import {
   Tag,
   AlertCircle,
   Calendar,
+  RefreshCw,
 } from 'lucide-react-native';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Text, Label } from '@/components/ui/Text';
@@ -36,9 +37,11 @@ export interface CreditCardScreenProps {
   config: CreditCardConfig | null;
   isLoading: boolean;
   invoiceMonth: string;
+  recurringCount: number;
   onMonthChange: (month: string) => void;
   onAdd: () => void;
   onSettings: () => void;
+  onViewRecurring: () => void;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -392,9 +395,11 @@ export function CreditCardScreen({
   config,
   isLoading,
   invoiceMonth,
+  recurringCount,
   onMonthChange,
   onAdd,
   onSettings,
+  onViewRecurring,
 }: CreditCardScreenProps) {
   const invoiceTotal = expenses.reduce((sum, e) => sum + e.amount, 0);
   const dueDate = config ? getInvoiceDueDate(invoiceMonth, config.dueDay) : null;
@@ -492,6 +497,42 @@ export function CreditCardScreen({
 
         {!config && <NoConfigBanner onSettings={onSettings} />}
 
+        {/* Recurring shortcut */}
+        <Pressable
+          onPress={onViewRecurring}
+          className="active:opacity-75"
+          style={{
+            flexDirection: 'row', alignItems: 'center', gap: 10,
+            backgroundColor: colors.primary.DEFAULT + '10',
+            borderRadius: 14, borderWidth: 1,
+            borderColor: colors.primary.DEFAULT + '25',
+            paddingHorizontal: 14, paddingVertical: 11,
+            marginBottom: 16,
+          }}
+        >
+          <View style={{
+            width: 30, height: 30, borderRadius: 9,
+            backgroundColor: colors.primary.DEFAULT + '20',
+            alignItems: 'center', justifyContent: 'center',
+          }}>
+            <RefreshCw size={14} color={colors.primary[400]} strokeWidth={2} />
+          </View>
+          <Text size="sm" weight="medium" style={{ flex: 1, color: colors.primary[400] }}>
+            Assinaturas e parcelamentos
+          </Text>
+          {recurringCount > 0 && (
+            <View style={{
+              paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10,
+              backgroundColor: colors.primary.DEFAULT + '25',
+            }}>
+              <Text size="xs" weight="bold" style={{ color: colors.primary[400] }}>
+                {recurringCount}
+              </Text>
+            </View>
+          )}
+          <ChevronRight size={16} color={colors.primary[400]} strokeWidth={2} />
+        </Pressable>
+
         {isLoading ? (
           <LoadingSkeleton />
         ) : (
@@ -527,6 +568,7 @@ export function CreditCardScreen({
                         borderRadius: 8, paddingHorizontal: 8,
                         paddingVertical: 4, alignSelf: 'flex-start',
                         marginBottom: 4,
+                        marginTop: 16
                       }}
                     >
                       <Text size="xs" variant="muted" weight="medium">
