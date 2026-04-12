@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useRef, useEffect } from 'react';
-import { View, ScrollView, Pressable, Animated, Alert } from 'react-native';
+import { View, ScrollView, Pressable, Animated, PanResponder, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Icons from 'lucide-react-native';
 import {
@@ -22,6 +22,9 @@ import { colors } from '@/constants/colors';
 import { formatCurrency, formatInvoiceMonth } from '@/lib/utils';
 import type { Category, RecurringCardItem, RecurringCardType } from '@/types/finance';
 
+const SWIPE_THRESHOLD = 72;
+const DELETE_ZONE_WIDTH = 80;
+
 // ─── Props ────────────────────────────────────────────────────────────────────
 
 export interface CreditCardRecurringScreenProps {
@@ -30,6 +33,7 @@ export interface CreditCardRecurringScreenProps {
   isLoading: boolean;
   error: string | null;
   onBack: () => void;
+  onEdit: (item: RecurringCardItem) => void;
   onCancel: (id: string) => Promise<void>;
 }
 
@@ -109,93 +113,141 @@ function SectionHeader({ type, count }: { type: RecurringCardType; count: number
   );
 }
 
-// ─── Item Row ─────────────────────────────────────────────────────────────────
+// ─── Swipeable Item Row ───────────────────────────────────────────────────────
 
-function RecurringCardItemRow({
+function SwipeableRecurringCardItemRow({
   item,
   category,
   isLast,
-  onCancelRequest,
+  onEdit,
+  onDeleteRequest,
 }: {
   item: RecurringCardItem;
   category: Category | undefined;
   isLast: boolean;
-  onCancelRequest: () => void;
+  onEdit: () => void;
+  onDeleteRequest: () => void;
 }) {
+  const translateX = useRef(new Animated.Value(0)).current;
+
   const Icon = category
     ? (Icons as unknown as Record<string, React.ElementType>)[category.icon] ?? Tag
     : Tag;
   const iconColor = category?.color ?? colors.text.muted;
   const isInstallment = item.type === 'installment';
 
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (_, g) =>
+        Math.abs(g.dx) > 8 && Math.abs(g.dx) > Math.abs(g.dy) * 1.5,
+      onPanResponderMove: (_, g) => {
+        if (g.dx < 0) {
+          translateX.setValue(Math.max(g.dx, -DELETE_ZONE_WIDTH - 10));
+        } else if (g.dx > 0) {
+          translateX.setValue(Math.min(g.dx, 0));
+        }
+      },
+      onPanResponderRelease: (_, g) => {
+        if (g.dx < -SWIPE_THRESHOLD) {
+          Animated.spring(translateX, {
+            toValue: -DELETE_ZONE_WIDTH,
+            useNativeDriver: true,
+            tension: 200,
+            friction: 20,
+          }).start(() => {
+            onDeleteRequest();
+            Animated.spring(translateX, { toValue: 0, useNativeDriver: true }).start();
+          });
+        } else {
+          Animated.spring(translateX, {
+            toValue: 0,
+            useNativeDriver: true,
+            tension: 200,
+            friction: 20,
+          }).start();
+        }
+      },
+      onPanResponderTerminate: () => {
+        Animated.spring(translateX, { toValue: 0, useNativeDriver: true }).start();
+      },
+    }),
+  ).current;
+
   return (
     <>
-      <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 14 }}>
-        {/* Icon */}
+      <View style={{ overflow: 'hidden' }}>
+        {/* Swipe delete background */}
         <View style={{
-          width: 44, height: 44, borderRadius: 14,
-          backgroundColor: iconColor + '18',
-          alignItems: 'center', justifyContent: 'center', marginRight: 12,
+          position: 'absolute', right: 0, top: 0, bottom: 0, width: DELETE_ZONE_WIDTH,
+          backgroundColor: colors.danger, alignItems: 'center', justifyContent: 'center',
+          borderRadius: 4,
         }}>
-          <Icon size={18} color={iconColor} strokeWidth={1.75} />
+          <Trash2 size={20} color="#fff" strokeWidth={2} />
         </View>
 
-        {/* Content */}
-        <View style={{ flex: 1, marginRight: 8 }}>
-          <Text size="sm" weight="semibold" numberOfLines={1}>
-            {item.description || category?.name || '—'}
-          </Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
-            {isInstallment ? (
-              <View style={{
-                flexDirection: 'row', alignItems: 'center', gap: 4,
-                paddingHorizontal: 7, paddingVertical: 2, borderRadius: 8,
-                backgroundColor: colors.warning + '18',
-                borderWidth: 1, borderColor: colors.warning + '30',
-              }}>
-                <Layers size={10} color={colors.warning} strokeWidth={2} />
-                <Text size="xs" style={{ color: colors.warning }}>
-                  {item.installmentCurrent ?? 1}/{item.installmentTotal}x
-                </Text>
-              </View>
-            ) : (
-              <View style={{
-                flexDirection: 'row', alignItems: 'center', gap: 4,
-                paddingHorizontal: 7, paddingVertical: 2, borderRadius: 8,
-                backgroundColor: colors.primary.DEFAULT + '18',
-                borderWidth: 1, borderColor: colors.primary.DEFAULT + '30',
-              }}>
-                <RefreshCw size={10} color={colors.primary[400]} strokeWidth={2} />
-                <Text size="xs" style={{ color: colors.primary[400] }}>Mensal</Text>
-              </View>
-            )}
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-              <Calendar size={10} color={colors.text.muted} strokeWidth={1.75} />
-              <Text size="xs" variant="muted">
-                desde {formatInvoiceMonth(item.startInvoiceMonth)}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Amount + cancel */}
-        <View style={{ alignItems: 'flex-end', gap: 8 }}>
-          <Text size="sm" weight="bold" style={{ color: colors.danger }}>
-            -{formatCurrency(item.amount / 100)}
-          </Text>
+        <Animated.View style={{ transform: [{ translateX }], backgroundColor: colors.background.surface }}>
           <Pressable
-            onPress={onCancelRequest}
-            className="active:opacity-70"
-            style={{
-              width: 28, height: 28, borderRadius: 9,
-              backgroundColor: colors.danger + '15',
-              borderWidth: 1, borderColor: colors.danger + '30',
-              alignItems: 'center', justifyContent: 'center',
-            }}
+            onPress={onEdit}
+            onLongPress={onDeleteRequest}
+            delayLongPress={450}
+            className="active:opacity-75"
+            style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 14 }}
+            {...panResponder.panHandlers}
           >
-            <Trash2 size={13} color={colors.danger} strokeWidth={2} />
+            {/* Icon */}
+            <View style={{
+              width: 44, height: 44, borderRadius: 14,
+              backgroundColor: iconColor + '18',
+              alignItems: 'center', justifyContent: 'center', marginRight: 12,
+            }}>
+              <Icon size={18} color={iconColor} strokeWidth={1.75} />
+            </View>
+
+            {/* Content */}
+            <View style={{ flex: 1, marginRight: 8 }}>
+              <Text size="sm" weight="semibold" numberOfLines={1}>
+                {item.description || category?.name || '—'}
+              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
+                {isInstallment ? (
+                  <View style={{
+                    flexDirection: 'row', alignItems: 'center', gap: 4,
+                    paddingHorizontal: 7, paddingVertical: 2, borderRadius: 8,
+                    backgroundColor: colors.warning + '18',
+                    borderWidth: 1, borderColor: colors.warning + '30',
+                  }}>
+                    <Layers size={10} color={colors.warning} strokeWidth={2} />
+                    <Text size="xs" style={{ color: colors.warning }}>
+                      {item.installmentCurrent ?? 1}/{item.installmentTotal}x
+                    </Text>
+                  </View>
+                ) : (
+                  <View style={{
+                    flexDirection: 'row', alignItems: 'center', gap: 4,
+                    paddingHorizontal: 7, paddingVertical: 2, borderRadius: 8,
+                    backgroundColor: colors.primary.DEFAULT + '18',
+                    borderWidth: 1, borderColor: colors.primary.DEFAULT + '30',
+                  }}>
+                    <RefreshCw size={10} color={colors.primary[400]} strokeWidth={2} />
+                    <Text size="xs" style={{ color: colors.primary[400] }}>Mensal</Text>
+                  </View>
+                )}
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                  <Calendar size={10} color={colors.text.muted} strokeWidth={1.75} />
+                  <Text size="xs" variant="muted">
+                    desde {formatInvoiceMonth(item.startInvoiceMonth)}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Amount */}
+            <Text size="sm" weight="bold" style={{ color: colors.danger }}>
+              -{formatCurrency(item.amount)}
+            </Text>
           </Pressable>
-        </View>
+        </Animated.View>
       </View>
       {!isLast && <Separator />}
     </>
@@ -289,6 +341,7 @@ export function CreditCardRecurringScreen({
   isLoading,
   error,
   onBack,
+  onEdit,
   onCancel,
 }: CreditCardRecurringScreenProps) {
   const { confirm, dialogProps, setLoading, close } = useConfirmDialog();
@@ -346,7 +399,7 @@ export function CreditCardRecurringScreen({
         </Pressable>
         <View style={{ flex: 1 }}>
           <Text size="xl" weight="bold">Recorrências do cartão</Text>
-          <Text size="xs" variant="muted">Assinaturas e parcelamentos automáticos</Text>
+          <Text size="xs" variant="muted">Toque para editar · segure para cancelar</Text>
         </View>
       </View>
 
@@ -398,12 +451,13 @@ export function CreditCardRecurringScreen({
             <SectionHeader type="subscription" count={subscriptionItems.length} />
             <Card>
               {subscriptionItems.map((item, i) => (
-                <RecurringCardItemRow
+                <SwipeableRecurringCardItemRow
                   key={item.id}
                   item={item}
                   category={getCategoryById(item.categoryId)}
                   isLast={i === subscriptionItems.length - 1}
-                  onCancelRequest={() => handleCancelRequest(item)}
+                  onEdit={() => onEdit(item)}
+                  onDeleteRequest={() => handleCancelRequest(item)}
                 />
               ))}
             </Card>
@@ -416,12 +470,13 @@ export function CreditCardRecurringScreen({
             <SectionHeader type="installment" count={installmentItems.length} />
             <Card>
               {installmentItems.map((item, i) => (
-                <RecurringCardItemRow
+                <SwipeableRecurringCardItemRow
                   key={item.id}
                   item={item}
                   category={getCategoryById(item.categoryId)}
                   isLast={i === installmentItems.length - 1}
-                  onCancelRequest={() => handleCancelRequest(item)}
+                  onEdit={() => onEdit(item)}
+                  onDeleteRequest={() => handleCancelRequest(item)}
                 />
               ))}
             </Card>

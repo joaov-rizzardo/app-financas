@@ -5,6 +5,7 @@ import {
   ScrollView,
   Pressable,
   Animated,
+  PanResponder,
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -122,6 +123,9 @@ function SectionHeader({ type, count }: { type: TransactionType; count: number }
 
 // ─── Recurring Item Row ───────────────────────────────────────────────────────
 
+const SWIPE_THRESHOLD = 72;
+const DELETE_ZONE_WIDTH = 80;
+
 function RecurringItemRow({
   item,
   category,
@@ -133,6 +137,8 @@ function RecurringItemRow({
   isLast: boolean;
   onCancelRequest: () => void;
 }) {
+  const translateX = useRef(new Animated.Value(0)).current;
+
   const Icon = category
     ? (Icons as unknown as Record<string, React.ElementType>)[category.icon] ?? Icons.Tag
     : Tag;
@@ -140,79 +146,119 @@ function RecurringItemRow({
   const isIncome = item.type === 'income';
   const amountColor = isIncome ? colors.success : colors.text.primary;
 
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (_, g) =>
+        Math.abs(g.dx) > 8 && Math.abs(g.dx) > Math.abs(g.dy) * 1.5,
+      onPanResponderMove: (_, g) => {
+        if (g.dx < 0) {
+          translateX.setValue(Math.max(g.dx, -DELETE_ZONE_WIDTH - 10));
+        } else if (g.dx > 0) {
+          translateX.setValue(Math.min(g.dx, 0));
+        }
+      },
+      onPanResponderRelease: (_, g) => {
+        if (g.dx < -SWIPE_THRESHOLD) {
+          Animated.spring(translateX, {
+            toValue: -DELETE_ZONE_WIDTH,
+            useNativeDriver: true,
+            tension: 200,
+            friction: 20,
+          }).start(() => {
+            onCancelRequest();
+            Animated.spring(translateX, { toValue: 0, useNativeDriver: true }).start();
+          });
+        } else {
+          Animated.spring(translateX, {
+            toValue: 0,
+            useNativeDriver: true,
+            tension: 200,
+            friction: 20,
+          }).start();
+        }
+      },
+      onPanResponderTerminate: () => {
+        Animated.spring(translateX, { toValue: 0, useNativeDriver: true }).start();
+      },
+    }),
+  ).current;
+
   return (
     <>
-      <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 14 }}>
-        {/* Icon */}
+      <View style={{ overflow: 'hidden' }}>
+        {/* Swipe delete background */}
         <View style={{
-          width: 44, height: 44, borderRadius: 14,
-          backgroundColor: iconColor + '18',
-          alignItems: 'center', justifyContent: 'center', marginRight: 12,
+          position: 'absolute', right: 0, top: 0, bottom: 0, width: DELETE_ZONE_WIDTH,
+          backgroundColor: colors.danger, alignItems: 'center', justifyContent: 'center',
+          borderRadius: 4,
         }}>
-          <Icon size={18} color={iconColor} strokeWidth={1.75} />
+          <Trash2 size={20} color="#fff" strokeWidth={2} />
         </View>
 
-        {/* Content */}
-        <View style={{ flex: 1, marginRight: 8 }}>
-          <Text size="sm" weight="semibold" numberOfLines={1}>
-            {item.description || category?.name || '—'}
-          </Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
-            {isInstallmentItem(item) ? (
-              /* Installment badge */
-              <View style={{
-                flexDirection: 'row', alignItems: 'center', gap: 4,
-                paddingHorizontal: 7, paddingVertical: 2, borderRadius: 8,
-                backgroundColor: colors.warning + '18',
-                borderWidth: 1, borderColor: colors.warning + '30',
-              }}>
-                <Layers size={10} color={colors.warning} strokeWidth={2} />
-                <Text size="xs" style={{ color: colors.warning }}>
-                  {item.installmentCurrent ?? 1}/{item.installmentTotal}x
-                </Text>
-              </View>
-            ) : (
-              /* Frequency badge */
-              <View style={{
-                flexDirection: 'row', alignItems: 'center', gap: 4,
-                paddingHorizontal: 7, paddingVertical: 2, borderRadius: 8,
-                backgroundColor: colors.primary.DEFAULT + '18',
-                borderWidth: 1, borderColor: colors.primary.DEFAULT + '30',
-              }}>
-                <RefreshCw size={10} color={colors.primary[400]} strokeWidth={2} />
-                <Text size="xs" style={{ color: colors.primary[400] }}>
-                  {FREQUENCY_LABEL[item.frequency] ?? item.frequency}
-                </Text>
-              </View>
-            )}
-            {/* Start date */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-              <Calendar size={10} color={colors.text.muted} strokeWidth={1.75} />
-              <Text size="xs" variant="muted">
-                desde {formatShortDate(item.startDate)}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Amount + cancel */}
-        <View style={{ alignItems: 'flex-end', gap: 8 }}>
-          <Text size="sm" weight="bold" style={{ color: amountColor }}>
-            {isIncome ? '+' : '-'}{formatCurrency(item.amount)}
-          </Text>
+        <Animated.View style={{ transform: [{ translateX }], backgroundColor: colors.background.surface }}>
           <Pressable
-            onPress={onCancelRequest}
-            className="active:opacity-70"
-            style={{
-              width: 28, height: 28, borderRadius: 9,
-              backgroundColor: colors.danger + '15',
-              borderWidth: 1, borderColor: colors.danger + '30',
-              alignItems: 'center', justifyContent: 'center',
-            }}
+            onLongPress={onCancelRequest}
+            delayLongPress={450}
+            className="active:opacity-75"
+            style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 14 }}
+            {...panResponder.panHandlers}
           >
-            <Trash2 size={13} color={colors.danger} strokeWidth={2} />
+            {/* Icon */}
+            <View style={{
+              width: 44, height: 44, borderRadius: 14,
+              backgroundColor: iconColor + '18',
+              alignItems: 'center', justifyContent: 'center', marginRight: 12,
+            }}>
+              <Icon size={18} color={iconColor} strokeWidth={1.75} />
+            </View>
+
+            {/* Content */}
+            <View style={{ flex: 1, marginRight: 8 }}>
+              <Text size="sm" weight="semibold" numberOfLines={1}>
+                {item.description || category?.name || '—'}
+              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
+                {isInstallmentItem(item) ? (
+                  <View style={{
+                    flexDirection: 'row', alignItems: 'center', gap: 4,
+                    paddingHorizontal: 7, paddingVertical: 2, borderRadius: 8,
+                    backgroundColor: colors.warning + '18',
+                    borderWidth: 1, borderColor: colors.warning + '30',
+                  }}>
+                    <Layers size={10} color={colors.warning} strokeWidth={2} />
+                    <Text size="xs" style={{ color: colors.warning }}>
+                      {item.installmentCurrent ?? 1}/{item.installmentTotal}x
+                    </Text>
+                  </View>
+                ) : (
+                  <View style={{
+                    flexDirection: 'row', alignItems: 'center', gap: 4,
+                    paddingHorizontal: 7, paddingVertical: 2, borderRadius: 8,
+                    backgroundColor: colors.primary.DEFAULT + '18',
+                    borderWidth: 1, borderColor: colors.primary.DEFAULT + '30',
+                  }}>
+                    <RefreshCw size={10} color={colors.primary[400]} strokeWidth={2} />
+                    <Text size="xs" style={{ color: colors.primary[400] }}>
+                      {FREQUENCY_LABEL[item.frequency] ?? item.frequency}
+                    </Text>
+                  </View>
+                )}
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                  <Calendar size={10} color={colors.text.muted} strokeWidth={1.75} />
+                  <Text size="xs" variant="muted">
+                    desde {formatShortDate(item.startDate)}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Amount */}
+            <Text size="sm" weight="bold" style={{ color: amountColor }}>
+              {isIncome ? '+' : '-'}{formatCurrency(item.amount)}
+            </Text>
           </Pressable>
-        </View>
+        </Animated.View>
       </View>
       {!isLast && <Separator />}
     </>
@@ -357,7 +403,7 @@ export function RecurringItemsScreen({
         </Pressable>
         <View style={{ flex: 1 }}>
           <Text size="xl" weight="bold">Recorrentes</Text>
-          <Text size="xs" variant="muted">Lançamentos e parcelamentos automáticos</Text>
+          <Text size="xs" variant="muted">Segure para cancelar · deslize para excluir</Text>
         </View>
       </View>
 

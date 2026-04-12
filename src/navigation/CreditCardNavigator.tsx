@@ -9,10 +9,11 @@ import { CreditCardScreen } from '@/screens/CreditCardScreen';
 import { CreditCardExpenseFormScreen } from '@/screens/CreditCardExpenseFormScreen';
 import { CreditCardConfigScreen } from '@/screens/CreditCardConfigScreen';
 import { CreditCardRecurringScreen } from '@/screens/CreditCardRecurringScreen';
+import { CreditCardRecurringItemFormScreen } from '@/screens/CreditCardRecurringItemFormScreen';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type View = 'main' | 'form' | 'config' | 'recurring';
+type View = 'main' | 'form' | 'config' | 'recurring' | 'recurringEdit';
 
 function currentInvoiceMonth(): string {
   const d = new Date();
@@ -24,16 +25,21 @@ function currentInvoiceMonth(): string {
 export function CreditCardNavigator() {
   const [view, setView] = useState<View>('main');
   const [invoiceMonth, setInvoiceMonth] = useState(currentInvoiceMonth);
+  const [editingItem, setEditingItem] = React.useState<import('@/types/finance').RecurringCardItem | null>(null);
 
   const { config } = useCreditCardConfig();
   const { expenses, isLoading, create } = useCreditCardExpenses(invoiceMonth);
   const { categories } = useCategories();
-  const { items: recurringItems, isLoading: recurringLoading, error: recurringError, remove: removeRecurringItem } = useRecurringCardItems();
+  const { items: recurringItems, isLoading: recurringLoading, error: recurringError, remove: removeRecurringItem, update: updateRecurringItem } = useRecurringCardItems();
 
   useEffect(() => {
     if (view === 'main') return;
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
-      setView('main');
+      if (view === 'recurringEdit') {
+        setView('recurring');
+      } else {
+        setView('main');
+      }
       return true;
     });
     return () => sub.remove();
@@ -41,6 +47,21 @@ export function CreditCardNavigator() {
 
   if (view === 'config') {
     return <CreditCardConfigScreen onBack={() => setView('main')} />;
+  }
+
+  if (view === 'recurringEdit' && editingItem) {
+    return (
+      <CreditCardRecurringItemFormScreen
+        item={editingItem}
+        categories={categories}
+        onSave={async (id, data) => {
+          await updateRecurringItem({ id, data });
+          setEditingItem(null);
+          setView('recurring');
+        }}
+        onBack={() => setView('recurring')}
+      />
+    );
   }
 
   if (view === 'recurring') {
@@ -51,6 +72,7 @@ export function CreditCardNavigator() {
         isLoading={recurringLoading}
         error={recurringError ? String(recurringError) : null}
         onBack={() => setView('main')}
+        onEdit={(item) => { setEditingItem(item); setView('recurringEdit'); }}
         onCancel={async (id) => { await removeRecurringItem(id); }}
       />
     );

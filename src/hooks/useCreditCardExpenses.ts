@@ -66,10 +66,13 @@ export function useCreditCardExpenses(invoiceMonth?: string) {
       }
 
       if (input.expenseType === 'installment' && (input.installmentTotal ?? 0) > 1) {
+        // amount stored per installment (total / n) — e.g. R$500 in 5x → R$100/month
+        const perInstallment = input.amount / input.installmentTotal!;
+
         // Cria o RecurringCardItem para gerar as parcelas seguintes
         await createRecurringCardItem({
           type: 'installment',
-          amount: input.amount,
+          amount: perInstallment,
           categoryId: input.categoryId,
           description: input.description,
           startInvoiceMonth: invoiceMonthComputed,
@@ -81,7 +84,7 @@ export function useCreditCardExpenses(invoiceMonth?: string) {
 
         // Cria a primeira parcela imediatamente na fatura correta
         await createCreditCardExpense({
-          amount: input.amount,
+          amount: perInstallment,
           description: input.description,
           categoryId: input.categoryId,
           date: input.date,
