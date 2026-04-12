@@ -749,6 +749,11 @@ export function TransactionFormScreen({
                   <Text size="xl" weight="bold" style={{ color: colors.text.secondary }}>+</Text>
                 </Pressable>
               </View>
+              {amountCents > 0 && (
+                <Text size="xs" variant="muted" style={{ marginTop: 8, textAlign: 'center' }}>
+                  {installmentTotal}× de {(centsToAmount(amountCents) / (parseInt(installmentTotal, 10) || 2)).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} por mês
+                </Text>
+              )}
             </View>
           )}
 

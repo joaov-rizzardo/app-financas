@@ -45,9 +45,13 @@ export function useTransactions(month?: string) {
           lastGeneratedAt: new Date().toISOString(),
         });
       } else if (data.installmentTotal && data.installmentTotal > 1) {
+        // amount stored per installment (total / n) — e.g. R$500 in 5x → R$100/month
+        const perInstallment = data.amount / data.installmentTotal;
+        data = { ...data, amount: perInstallment };
+
         recurringId = await recurringItems.create({
           type: data.type,
-          amount: data.amount,
+          amount: perInstallment,
           categoryId: data.categoryId,
           description: data.description,
           frequency: 'monthly',
