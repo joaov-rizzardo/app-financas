@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useEffect, useRef } from 'react';
-import { Modal, View, Pressable, Animated } from 'react-native';
+import { ActivityIndicator, Modal, View, Pressable, Animated } from 'react-native';
 import { Text } from './Text';
 import { colors } from '@/constants/colors';
 
@@ -16,6 +16,7 @@ export interface ConfirmDialogProps {
   cancelLabel?: string;
   variant?: ConfirmDialogVariant;
   icon?: React.ReactNode;
+  isLoading?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -38,6 +39,7 @@ export function ConfirmDialog({
   cancelLabel = 'Cancelar',
   variant = 'danger',
   icon,
+  isLoading = false,
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
@@ -89,7 +91,7 @@ export function ConfirmDialog({
         {/* Tap backdrop to dismiss */}
         <Pressable
           style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
-          onPress={onCancel}
+          onPress={isLoading ? undefined : onCancel}
         />
 
         {/* Card */}
@@ -151,7 +153,7 @@ export function ConfirmDialog({
           <View style={{ width: '100%', gap: 10 }}>
             {/* Primary / destructive action */}
             <Pressable
-              onPress={onConfirm}
+              onPress={isLoading ? undefined : onConfirm}
               className="active:opacity-75"
               style={{
                 height: 52,
@@ -161,27 +163,32 @@ export function ConfirmDialog({
                 backgroundColor: accentColor,
                 shadowColor: accentColor,
                 shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.4,
+                shadowOpacity: isLoading ? 0.2 : 0.4,
                 shadowRadius: 12,
                 elevation: 8,
+                opacity: isLoading ? 0.85 : 1,
               }}
             >
-              <Text
-                style={{
-                  color: '#fff',
-                  fontSize: 15,
-                  fontWeight: '700',
-                  letterSpacing: 0.3,
-                  fontFamily: 'Inter_700Bold',
-                }}
-              >
-                {confirmLabel}
-              </Text>
+              {isLoading ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text
+                  style={{
+                    color: '#fff',
+                    fontSize: 15,
+                    fontWeight: '700',
+                    letterSpacing: 0.3,
+                    fontFamily: 'Inter_700Bold',
+                  }}
+                >
+                  {confirmLabel}
+                </Text>
+              )}
             </Pressable>
 
             {/* Cancel */}
             <Pressable
-              onPress={onCancel}
+              onPress={isLoading ? undefined : onCancel}
               className="active:opacity-75"
               style={{
                 height: 52,
@@ -191,6 +198,7 @@ export function ConfirmDialog({
                 backgroundColor: colors.background.card,
                 borderWidth: 1,
                 borderColor: colors.border.DEFAULT,
+                opacity: isLoading ? 0.4 : 1,
               }}
             >
               <Text size="sm" weight="semibold" variant="secondary">

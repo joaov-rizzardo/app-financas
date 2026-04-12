@@ -304,7 +304,7 @@ export function RecurringItemsScreen({
   onBack,
   onCancel,
 }: RecurringItemsScreenProps) {
-  const { confirm, dialogProps } = useConfirmDialog();
+  const { confirm, dialogProps, setLoading, close } = useConfirmDialog();
 
   const getCategoryById = (id: string) => categories.find((c) => c.id === id);
 
@@ -318,9 +318,12 @@ export function RecurringItemsScreen({
       variant: 'danger',
     });
     if (confirmed) {
+      setLoading(true);
       try {
         await onCancel(item.id);
+        close();
       } catch {
+        close();
         Alert.alert('Erro', 'Não foi possível cancelar a recorrência.');
       }
     }
