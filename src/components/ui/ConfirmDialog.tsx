@@ -43,11 +43,24 @@ export function ConfirmDialog({
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
-  const scale   = useRef(new Animated.Value(0.88)).current;
-  const opacity = useRef(new Animated.Value(0)).current;
+  const scale        = useRef(new Animated.Value(0.9)).current;
+  const translateY   = useRef(new Animated.Value(36)).current;
+  const opacity      = useRef(new Animated.Value(0)).current;
+  const glowOpacity  = useRef(new Animated.Value(0)).current;
+  const glowScale    = useRef(new Animated.Value(0.5)).current;
+  const ringScale    = useRef(new Animated.Value(0.5)).current;
+  const ringOpacity  = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (visible) {
+      scale.setValue(0.9);
+      translateY.setValue(36);
+      opacity.setValue(0);
+      glowOpacity.setValue(0);
+      glowScale.setValue(0.5);
+      ringScale.setValue(0.5);
+      ringOpacity.setValue(0);
+
       Animated.parallel([
         Animated.spring(scale, {
           toValue: 1,
@@ -55,17 +68,55 @@ export function ConfirmDialog({
           friction: 22,
           useNativeDriver: true,
         }),
-        Animated.timing(opacity, {
-          toValue: 1,
-          duration: 160,
+        Animated.spring(translateY, {
+          toValue: 0,
+          tension: 280,
+          friction: 22,
           useNativeDriver: true,
         }),
+        Animated.timing(opacity, {
+          toValue: 1,
+          duration: 180,
+          useNativeDriver: true,
+        }),
+        Animated.timing(glowOpacity, {
+          toValue: 0.11,
+          duration: 450,
+          useNativeDriver: true,
+        }),
+        Animated.spring(glowScale, {
+          toValue: 1,
+          tension: 160,
+          friction: 18,
+          useNativeDriver: true,
+        }),
+        Animated.sequence([
+          Animated.delay(110),
+          Animated.parallel([
+            Animated.spring(ringScale, {
+              toValue: 1,
+              tension: 200,
+              friction: 16,
+              useNativeDriver: true,
+            }),
+            Animated.timing(ringOpacity, {
+              toValue: 1,
+              duration: 280,
+              useNativeDriver: true,
+            }),
+          ]),
+        ]),
       ]).start();
     } else {
-      scale.setValue(0.88);
+      scale.setValue(0.9);
+      translateY.setValue(36);
       opacity.setValue(0);
+      glowOpacity.setValue(0);
+      glowScale.setValue(0.5);
+      ringScale.setValue(0.5);
+      ringOpacity.setValue(0);
     }
-  }, [visible, scale, opacity]);
+  }, [visible, scale, translateY, opacity, glowOpacity, glowScale, ringScale, ringOpacity]);
 
   const accentColor = VARIANT_COLOR[variant];
 
@@ -77,14 +128,13 @@ export function ConfirmDialog({
       animationType="none"
       onRequestClose={onCancel}
     >
-      {/* Backdrop */}
       <Animated.View
         style={{
           flex: 1,
-          backgroundColor: 'rgba(0,0,0,0.7)',
+          backgroundColor: 'rgba(0,0,0,0.80)',
           alignItems: 'center',
           justifyContent: 'center',
-          paddingHorizontal: 28,
+          paddingHorizontal: 24,
           opacity,
         }}
       >
@@ -94,117 +144,165 @@ export function ConfirmDialog({
           onPress={isLoading ? undefined : onCancel}
         />
 
+        {/* Ambient glow blob */}
+        <Animated.View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            width: 340,
+            height: 340,
+            borderRadius: 170,
+            backgroundColor: accentColor,
+            opacity: glowOpacity,
+            transform: [{ scale: glowScale }],
+          }}
+        />
+
         {/* Card */}
         <Animated.View
           style={{
             width: '100%',
             backgroundColor: colors.background.elevated,
-            borderRadius: 24,
+            borderRadius: 28,
             borderWidth: 1,
             borderColor: colors.border.DEFAULT,
-            padding: 24,
-            alignItems: 'center',
-            transform: [{ scale }],
-            // top edge accent line
-            borderTopWidth: 1,
-            borderTopColor: accentColor + '55',
+            borderTopWidth: 2,
+            borderTopColor: accentColor,
+            shadowColor: accentColor,
+            shadowOffset: { width: 0, height: 10 },
+            shadowOpacity: 0.32,
+            shadowRadius: 28,
+            elevation: 20,
+            transform: [{ scale }, { translateY }],
           }}
         >
-          {/* Icon container */}
-          {icon != null && (
-            <View
-              style={{
-                width: 64,
-                height: 64,
-                borderRadius: 20,
-                backgroundColor: accentColor + '18',
-                borderWidth: 1,
-                borderColor: accentColor + '30',
+          <View style={{ padding: 28, paddingTop: 26, alignItems: 'center' }}>
+
+            {/* Icon with concentric rings */}
+            {icon != null && (
+              <View style={{
+                width: 96,
+                height: 96,
                 alignItems: 'center',
                 justifyContent: 'center',
-                marginBottom: 20,
-              }}
-            >
-              {icon}
-            </View>
-          )}
+                marginBottom: 22,
+              }}>
+                {/* Outer ring */}
+                <Animated.View style={{
+                  position: 'absolute',
+                  width: 96,
+                  height: 96,
+                  borderRadius: 48,
+                  borderWidth: 1,
+                  borderColor: accentColor + '20',
+                  opacity: ringOpacity,
+                  transform: [{ scale: ringScale }],
+                }} />
+                {/* Mid ring */}
+                <Animated.View style={{
+                  position: 'absolute',
+                  width: 74,
+                  height: 74,
+                  borderRadius: 37,
+                  borderWidth: 1,
+                  borderColor: accentColor + '38',
+                  opacity: ringOpacity,
+                  transform: [{ scale: ringScale }],
+                }} />
+                {/* Icon box */}
+                <View style={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: 17,
+                  backgroundColor: accentColor + '14',
+                  borderWidth: 1,
+                  borderColor: accentColor + '30',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  {icon}
+                </View>
+              </View>
+            )}
 
-          {/* Title */}
-          <Text size="xl" weight="bold" className="text-center mb-2">
-            {title}
-          </Text>
-
-          {/* Message */}
-          {message != null && (
+            {/* Title */}
             <Text
-              size="sm"
-              variant="muted"
-              className="text-center"
-              style={{ lineHeight: 20, marginBottom: 24 }}
+              size="xl"
+              weight="bold"
+              style={{ textAlign: 'center', marginBottom: 8, letterSpacing: -0.3 }}
             >
-              {message}
+              {title}
             </Text>
-          )}
 
-          {/* Spacer when no message */}
-          {message == null && <View style={{ height: 20 }} />}
-
-          {/* Actions */}
-          <View style={{ width: '100%', gap: 10 }}>
-            {/* Primary / destructive action */}
-            <Pressable
-              onPress={isLoading ? undefined : onConfirm}
-              className="active:opacity-75"
-              style={{
-                height: 52,
-                borderRadius: 14,
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: accentColor,
-                shadowColor: accentColor,
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: isLoading ? 0.2 : 0.4,
-                shadowRadius: 12,
-                elevation: 8,
-                opacity: isLoading ? 0.85 : 1,
-              }}
-            >
-              {isLoading ? (
-                <ActivityIndicator size="small" color="#fff" />
-              ) : (
-                <Text
-                  style={{
-                    color: '#fff',
-                    fontSize: 15,
-                    fontWeight: '700',
-                    letterSpacing: 0.3,
-                    fontFamily: 'Inter_700Bold',
-                  }}
-                >
-                  {confirmLabel}
-                </Text>
-              )}
-            </Pressable>
-
-            {/* Cancel */}
-            <Pressable
-              onPress={isLoading ? undefined : onCancel}
-              className="active:opacity-75"
-              style={{
-                height: 52,
-                borderRadius: 14,
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: colors.background.card,
-                borderWidth: 1,
-                borderColor: colors.border.DEFAULT,
-                opacity: isLoading ? 0.4 : 1,
-              }}
-            >
-              <Text size="sm" weight="semibold" variant="secondary">
-                {cancelLabel}
+            {/* Message */}
+            {message != null ? (
+              <Text
+                size="sm"
+                variant="muted"
+                style={{ textAlign: 'center', lineHeight: 21, marginBottom: 28 }}
+              >
+                {message}
               </Text>
-            </Pressable>
+            ) : (
+              <View style={{ height: 24 }} />
+            )}
+
+            {/* Actions */}
+            <View style={{ width: '100%', gap: 10 }}>
+              {/* Confirm */}
+              <Pressable
+                onPress={isLoading ? undefined : onConfirm}
+                className="active:opacity-80"
+                style={{
+                  height: 54,
+                  borderRadius: 16,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: accentColor,
+                  shadowColor: accentColor,
+                  shadowOffset: { width: 0, height: 6 },
+                  shadowOpacity: isLoading ? 0.15 : 0.55,
+                  shadowRadius: 18,
+                  elevation: 12,
+                  opacity: isLoading ? 0.8 : 1,
+                }}
+              >
+                {isLoading ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text
+                    style={{
+                      color: '#fff',
+                      fontSize: 15,
+                      fontWeight: '700',
+                      letterSpacing: 0.15,
+                      fontFamily: 'Inter_700Bold',
+                    }}
+                  >
+                    {confirmLabel}
+                  </Text>
+                )}
+              </Pressable>
+
+              {/* Cancel */}
+              <Pressable
+                onPress={isLoading ? undefined : onCancel}
+                className="active:opacity-60"
+                style={{
+                  height: 50,
+                  borderRadius: 14,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderWidth: 1,
+                  borderColor: colors.border.DEFAULT,
+                  opacity: isLoading ? 0.3 : 1,
+                }}
+              >
+                <Text size="sm" weight="semibold" variant="secondary">
+                  {cancelLabel}
+                </Text>
+              </Pressable>
+            </View>
           </View>
         </Animated.View>
       </Animated.View>

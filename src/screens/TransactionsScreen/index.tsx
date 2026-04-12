@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { View, ScrollView, Pressable, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Plus, ChevronLeft, ChevronRight, AlertCircle, RefreshCw } from 'lucide-react-native';
+import { Plus, ChevronLeft, ChevronRight, AlertCircle, RefreshCw, Trash2 } from 'lucide-react-native';
 import { Card } from '@/components/ui/Card';
 import { Text, Label } from '@/components/ui/Text';
 import { Chip } from '@/components/ui/Button';
@@ -91,7 +91,7 @@ export function TransactionsScreen({
   onViewRecurring,
 }: TransactionsScreenProps) {
   const [filter, setFilter] = React.useState<FilterType>('all');
-  const { confirm, dialogProps } = useConfirmDialog();
+  const { confirm, dialogProps, setLoading, close } = useConfirmDialog();
 
   const { year, m } = parseMonth(month);
   const monthLabel = `${MONTH_NAMES[m - 1]} ${year}`;
@@ -112,11 +112,15 @@ export function TransactionsScreen({
       confirmLabel: 'Excluir',
       cancelLabel: 'Cancelar',
       variant: 'danger',
+      icon: <Trash2 size={26} color={colors.danger} strokeWidth={1.75} />,
     });
     if (confirmed) {
       try {
+        setLoading(true);
         await onDelete(tx.id);
+        close();
       } catch {
+        close();
         Alert.alert('Erro', 'Não foi possível excluir o lançamento.');
       }
     }

@@ -76,6 +76,7 @@ export function SwipeableTransactionRow({
   return (
     <>
       <View style={{ overflow: 'hidden' }}>
+        {/* Swipe-to-delete background */}
         <View style={{
           position: 'absolute', right: 0, top: 0, bottom: 0, width: DELETE_ZONE_WIDTH,
           backgroundColor: colors.danger, alignItems: 'center', justifyContent: 'center',
@@ -85,39 +86,47 @@ export function SwipeableTransactionRow({
         </View>
 
         <Animated.View style={{ transform: [{ translateX }], backgroundColor: colors.background.surface }}>
-          <Pressable
-            onPress={onEdit}
-            className="active:opacity-75"
-            style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 14 }}
-            {...panResponder.panHandlers}
-          >
-            <View style={{
-              width: 40, height: 40, borderRadius: 12,
-              backgroundColor: iconColor + '18',
-              alignItems: 'center', justifyContent: 'center', marginRight: 12,
-            }}>
-              <Icon size={17} color={iconColor} strokeWidth={1.75} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text size="sm" weight="medium">
-                {tx.description || category?.name || '—'}
-              </Text>
-              <Text size="xs" variant="muted" style={{ marginTop: 2 }}>
-                {category?.name ?? 'Sem categoria'}
-                {tx.installmentTotal && tx.installmentTotal > 1
-                  ? ` · ${tx.installmentCurrent}/${tx.installmentTotal}x`
-                  : ''}
-                {tx.isRecurring ? ' · recorrente' : ''}
-              </Text>
-            </View>
-            <Text
-              size="sm"
-              weight="semibold"
-              style={{ color: isIncome ? colors.success : colors.text.primary }}
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+
+            {/* Edit area (swipeable + tappable + long press to delete) */}
+            <Pressable
+              onPress={onEdit}
+              onLongPress={onDeleteRequest}
+              delayLongPress={450}
+              className="active:opacity-75"
+              style={{ flex: 1, flexDirection: 'row', alignItems: 'center', paddingVertical: 14 }}
+              {...panResponder.panHandlers}
             >
-              {isIncome ? '+' : '-'}{formatCurrency(tx.amount)}
-            </Text>
-          </Pressable>
+              <View style={{
+                width: 40, height: 40, borderRadius: 12,
+                backgroundColor: iconColor + '18',
+                alignItems: 'center', justifyContent: 'center', marginRight: 12,
+              }}>
+                <Icon size={17} color={iconColor} strokeWidth={1.75} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text size="sm" weight="medium">
+                  {tx.description || category?.name || '—'}
+                </Text>
+                <Text size="xs" variant="muted" style={{ marginTop: 2 }}>
+                  {category?.name ?? 'Sem categoria'}
+                  {tx.installmentTotal && tx.installmentTotal > 1
+                    ? ` · ${tx.installmentCurrent}/${tx.installmentTotal}x`
+                    : ''}
+                  {tx.isRecurring ? ' · recorrente' : ''}
+                </Text>
+              </View>
+              <Text
+                size="sm"
+                weight="semibold"
+                style={{ color: isIncome ? colors.success : colors.text.primary }}
+              >
+                {isIncome ? '+' : '-'}{formatCurrency(tx.amount)}
+              </Text>
+            </Pressable>
+
+
+          </View>
         </Animated.View>
       </View>
       {!isLast && <Separator />}
