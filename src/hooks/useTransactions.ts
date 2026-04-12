@@ -42,6 +42,7 @@ export function useTransactions(month?: string) {
           description: data.description,
           frequency,
           startDate: data.date,
+          lastGeneratedAt: new Date().toISOString(),
         });
       } else if (data.installmentTotal && data.installmentTotal > 1) {
         recurringId = await recurringItems.create({
@@ -51,6 +52,7 @@ export function useTransactions(month?: string) {
           description: data.description,
           frequency: 'monthly',
           startDate: data.date,
+          lastGeneratedAt: new Date().toISOString(),
           installmentTotal: data.installmentTotal,
           installmentCurrent: 1,
         });

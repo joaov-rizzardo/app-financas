@@ -121,6 +121,61 @@
 
 ---
 
+## Módulo de Recorrências
+
+### Fluxo de inicialização (`App.tsx`)
+Ao abrir o app, antes de montar o `NavigationContainer`, `App.tsx` executa um ciclo de verificação de recorrências com a seguinte máquina de estados:
+
+```
+'checking' → 'processing' → 'ready' → (mostra app)
+```
+
+- **`checking`**: chama `hasPendingRecurringItems()` — se não houver pendentes, pula direto para o app sem exibir tela de loading.
+- **`processing`**: chama `processRecurringItems(onProgress)` com callback de progresso.
+- **`ready`**: exibe tela de sucesso por `READY_DISPLAY_DURATION` (1200 ms) antes de montar o app.
+- Em caso de erro inesperado, o app abre normalmente (fail-open).
+
+> O `QueryClientProvider` só é montado após o processamento, pois `processRecurringItems` chama o Firestore diretamente (sem React Query). A `RecurringProcessingScreen` usa `StyleSheet.create` em vez de NativeWind.
+
+### Serviço (`src/services/recurringProcessor.ts`)
+| Função | Descrição |
+|---|---|
+| `hasPendingRecurringItems()` | Verificação rápida — retorna `true` se algum item precisa de geração |
+| `processRecurringItems(onProgress?)` | Processa todos os itens pendentes; retorna `ProcessingResult` |
+
+**Critério de geração por frequência:**
+- `monthly`: gera se `lastGeneratedAt` for nulo ou de mês anterior ao atual.
+- `weekly`: gera se `lastGeneratedAt` for nulo ou há ≥ 7 dias.
+
+**Data da transação gerada:**
+- `monthly`: preserva o dia original de `startDate` no mês atual, capped ao último dia do mês.
+- `weekly`: usa a data de hoje.
+
+**Fluxo por item:**
+1. Cria a `transaction` via `createTransaction()`.
+2. Se for a última parcela (`installmentCurrent >= installmentTotal`): deleta o `RecurringItem`.
+3. Caso contrário: atualiza `lastGeneratedAt` e incrementa `installmentCurrent` (se aplicável).
+
+### Prevenção de duplicatas
+Ao criar um `RecurringItem` pelo formulário (`useTransactions.ts`), `lastGeneratedAt` é definido imediatamente com o timestamp atual. Assim, o processador de startup nunca regera a primeira transação já criada pelo formulário.
+
+### Tela de loading (`src/screens/RecurringProcessingScreen.tsx`)
+Props:
+```typescript
+type AppStatus = 'checking' | 'processing' | 'ready';
+
+interface RecurringProcessingScreenProps {
+  status: AppStatus;
+  progress?: ProcessingProgress; // { total, processed, currentDescription }
+}
+```
+
+- `checking` → spinner animado + texto "Verificando recorrências..."
+- `processing` → barra de progresso animada + contador + nome do item atual
+- `ready` → checkmark com "Tudo em dia!" (desaparece após 1200 ms)
+
+---
+
 ## Utilitários (`src/lib/utils.ts`)
 | Função | Descrição |
 |---|---|

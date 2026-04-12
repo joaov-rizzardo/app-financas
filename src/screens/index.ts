@@ -1,4 +1,5 @@
 export * from './BudgetsScreen';
+export * from './RecurringProcessingScreen';
 export * from './CategoriesScreen';
 export * from './CategoryFormScreen';
 export * from './CreditCardScreen';

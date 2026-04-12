@@ -4,5 +4,6 @@ export * from './categories';
 export * from './budgets';
 export * from './goals';
 export * from './recurringItems';
+export * from './recurringProcessor';
 export * from './creditCardExpenses';
 export * from './creditCardConfig';
