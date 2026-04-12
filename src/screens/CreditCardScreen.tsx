@@ -12,11 +12,14 @@ import {
   AlertCircle,
   Calendar,
   RefreshCw,
+  Lock,
+  CheckCircle,
 } from 'lucide-react-native';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Text, Label } from '@/components/ui/Text';
 import { Separator } from '@/components/ui/Separator';
 import { Badge } from '@/components/ui/Badge';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { colors } from '@/constants/colors';
 import {
   formatCurrency,
@@ -28,6 +31,7 @@ import {
   getInvoiceDueDate,
 } from '@/lib/utils';
 import type { CreditCardExpense, CreditCardConfig, Category } from '@/types/finance';
+import type { CreditCardInvoicePayment } from '@/services/creditCardInvoices';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -38,10 +42,12 @@ export interface CreditCardScreenProps {
   isLoading: boolean;
   invoiceMonth: string;
   recurringCount: number;
+  payment: CreditCardInvoicePayment | null;
   onMonthChange: (month: string) => void;
   onAdd: () => void;
   onSettings: () => void;
   onViewRecurring: () => void;
+  onClose: () => Promise<void>;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -184,10 +190,12 @@ function CreditCardWidget({
   invoiceTotal,
   dueDate,
   config,
+  closedAt,
 }: {
   invoiceTotal: number;
   dueDate: string | null;
   config: CreditCardConfig | null;
+  closedAt?: string | null;
 }) {
   const limit = config?.limit ? config.limit / 100 : null;
   const usagePct = limit ? toPercent(invoiceTotal, limit) : 0;
@@ -199,7 +207,7 @@ function CreditCardWidget({
       style={{
         backgroundColor: colors.primary[700],
         borderRadius: 24, padding: 24, marginBottom: 16,
-        borderWidth: 1, borderColor: colors.primary[600],
+        borderWidth: 1, borderColor: closedAt ? colors.success + '60' : colors.primary[600],
       }}
     >
       <View className="flex-row justify-between items-start mb-8">
@@ -214,14 +222,31 @@ function CreditCardWidget({
             ••••  ••••  ••••  ••••
           </Text>
         </View>
-        <View
-          style={{
-            width: 44, height: 44, borderRadius: 22,
-            backgroundColor: colors.primary[600],
-            alignItems: 'center', justifyContent: 'center',
-          }}
-        >
-          <CreditCard size={22} color={colors.primary[200]} />
+        <View className="flex-row items-center gap-2">
+          {closedAt && (
+            <View
+              style={{
+                flexDirection: 'row', alignItems: 'center', gap: 4,
+                backgroundColor: colors.success + '20',
+                borderRadius: 10, paddingHorizontal: 8, paddingVertical: 4,
+                borderWidth: 1, borderColor: colors.success + '40',
+              }}
+            >
+              <Lock size={11} color={colors.success} />
+              <Text size="xs" weight="semibold" style={{ color: colors.success }}>
+                Fatura fechada
+              </Text>
+            </View>
+          )}
+          <View
+            style={{
+              width: 44, height: 44, borderRadius: 22,
+              backgroundColor: colors.primary[600],
+              alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            <CreditCard size={22} color={colors.primary[200]} />
+          </View>
         </View>
       </View>
 
@@ -232,14 +257,21 @@ function CreditCardWidget({
             {formatCurrency(invoiceTotal)}
           </Text>
         </View>
-        {dueDate && (
+        {closedAt ? (
+          <View className="items-end">
+            <Label className="text-primary-300 mb-1">Fechada em</Label>
+            <Text size="sm" weight="semibold" className="text-white">
+              {formatShortDate(closedAt.substring(0, 10))}
+            </Text>
+          </View>
+        ) : dueDate ? (
           <View className="items-end">
             <Label className="text-primary-300 mb-1">Vencimento</Label>
             <Text size="sm" weight="semibold" className="text-white">
               {formatShortDate(dueDate)}
             </Text>
           </View>
-        )}
+        ) : null}
       </View>
 
       {limit !== null && (
@@ -275,10 +307,12 @@ function InvoiceSummary({
   invoiceTotal,
   config,
   invoiceMonth,
+  closedAt,
 }: {
   invoiceTotal: number;
   config: CreditCardConfig | null;
   invoiceMonth: string;
+  closedAt?: string | null;
 }) {
   const limit = config?.limit ? config.limit / 100 : null;
   const available = limit !== null ? Math.max(0, limit - invoiceTotal) : null;
@@ -290,7 +324,12 @@ function InvoiceSummary({
   return (
     <Card className="mb-4">
       <CardHeader>
-        <Text weight="semibold">Resumo da fatura</Text>
+        <View className="flex-row items-center justify-between">
+          <Text weight="semibold">Resumo da fatura</Text>
+          {closedAt && (
+            <Badge label="Fatura fechada" variant="success" />
+          )}
+        </View>
       </CardHeader>
       <CardContent>
         <View className="flex-row justify-between py-2">
@@ -299,7 +338,15 @@ function InvoiceSummary({
             {formatCurrency(invoiceTotal)}
           </Text>
         </View>
-        {dueDate && (
+        {closedAt ? (
+          <>
+            <Separator />
+            <View className="flex-row justify-between py-2">
+              <Text variant="muted" size="sm">Fechada em</Text>
+              <Text size="sm" weight="medium">{formatDate(closedAt.substring(0, 10))}</Text>
+            </View>
+          </>
+        ) : dueDate ? (
           <>
             <Separator />
             <View className="flex-row justify-between py-2">
@@ -307,7 +354,7 @@ function InvoiceSummary({
               <Text size="sm" weight="medium">{formatDate(dueDate)}</Text>
             </View>
           </>
-        )}
+        ) : null}
         {available !== null && (
           <>
             <Separator />
@@ -396,14 +443,18 @@ export function CreditCardScreen({
   isLoading,
   invoiceMonth,
   recurringCount,
+  payment,
   onMonthChange,
   onAdd,
   onSettings,
   onViewRecurring,
+  onClose,
 }: CreditCardScreenProps) {
   const invoiceTotal = expenses.reduce((sum, e) => sum + e.amount, 0);
   const dueDate = config ? getInvoiceDueDate(invoiceMonth, config.dueDay) : null;
   const grouped = groupByDate(expenses);
+  const [closeDialogVisible, setCloseDialogVisible] = React.useState(false);
+  const [isClosing, setIsClosing] = React.useState(false);
 
   const categoryMap = React.useMemo(() => {
     const map = new Map<string, Category>();
@@ -411,8 +462,33 @@ export function CreditCardScreen({
     return map;
   }, [categories]);
 
+  async function handleCloseInvoice() {
+    setIsClosing(true);
+    try {
+      await onClose();
+      setCloseDialogVisible(false);
+    } finally {
+      setIsClosing(false);
+    }
+  }
+
+  const isClosed = payment !== null;
+  const showCloseButton = !isClosed && expenses.length > 0;
+
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+      <ConfirmDialog
+        visible={closeDialogVisible}
+        title="Fechar fatura"
+        message={`Total: ${formatCurrency(invoiceTotal)}\n${expenses.length} ${expenses.length === 1 ? 'gasto' : 'gastos'}\n\nAs transações serão criadas individualmente nos lançamentos.`}
+        confirmLabel="Fechar fatura"
+        cancelLabel="Cancelar"
+        variant="warning"
+        icon={<Lock size={24} color={colors.warning} />}
+        isLoading={isClosing}
+        onConfirm={handleCloseInvoice}
+        onCancel={() => { if (!isClosing) setCloseDialogVisible(false); }}
+      />
       <ScrollView
         className="flex-1"
         contentContainerClassName="px-4 pb-10"
@@ -541,12 +617,33 @@ export function CreditCardScreen({
               invoiceTotal={invoiceTotal}
               dueDate={dueDate}
               config={config}
+              closedAt={payment?.closedAt}
             />
             <InvoiceSummary
               invoiceTotal={invoiceTotal}
               config={config}
               invoiceMonth={invoiceMonth}
+              closedAt={payment?.closedAt}
             />
+
+            {/* Close invoice button */}
+            {showCloseButton && (
+              <Pressable
+                onPress={() => setCloseDialogVisible(true)}
+                className="active:opacity-80"
+                style={{
+                  flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+                  gap: 8, backgroundColor: colors.warning + '15',
+                  borderRadius: 14, borderWidth: 1, borderColor: colors.warning + '35',
+                  paddingVertical: 14, marginBottom: 16,
+                }}
+              >
+                <CheckCircle size={16} color={colors.warning} />
+                <Text size="sm" weight="semibold" style={{ color: colors.warning }}>
+                  Fechar fatura
+                </Text>
+              </Pressable>
+            )}
 
             {/* Expense list */}
             {expenses.length === 0 ? (

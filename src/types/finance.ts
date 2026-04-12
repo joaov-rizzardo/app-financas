@@ -12,6 +12,7 @@ export interface Transaction {
   recurringId?: string;
   installmentTotal?: number;
   installmentCurrent?: number;
+  creditCardInvoiceMonth?: string; // YYYY-MM — set when generated from a credit card invoice
   createdAt: string; // ISO 8601
 }
 

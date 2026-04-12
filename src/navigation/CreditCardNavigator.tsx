@@ -5,6 +5,7 @@ import { useCreditCardExpenses } from '@/hooks/useCreditCardExpenses';
 import { useCreditCardConfig } from '@/hooks/useCreditCardConfig';
 import { useCategories } from '@/hooks/useCategories';
 import { useRecurringCardItems } from '@/hooks/useRecurringCardItems';
+import { useCreditCardInvoice } from '@/hooks/useCreditCardInvoice';
 import { CreditCardScreen } from '@/screens/CreditCardScreen';
 import { CreditCardExpenseFormScreen } from '@/screens/CreditCardExpenseFormScreen';
 import { CreditCardConfigScreen } from '@/screens/CreditCardConfigScreen';
@@ -31,6 +32,7 @@ export function CreditCardNavigator() {
   const { expenses, isLoading, create } = useCreditCardExpenses(invoiceMonth);
   const { categories } = useCategories();
   const { items: recurringItems, isLoading: recurringLoading, error: recurringError, remove: removeRecurringItem, update: updateRecurringItem } = useRecurringCardItems();
+  const { payment, close: closeInvoice } = useCreditCardInvoice(invoiceMonth);
 
   useEffect(() => {
     if (view === 'main') return;
@@ -100,10 +102,12 @@ export function CreditCardNavigator() {
       isLoading={isLoading}
       invoiceMonth={invoiceMonth}
       recurringCount={recurringItems.length}
+      payment={payment}
       onMonthChange={setInvoiceMonth}
       onAdd={() => setView('form')}
       onSettings={() => setView('config')}
       onViewRecurring={() => setView('recurring')}
+      onClose={async () => { await closeInvoice({ expenses, categoryId: '' }); }}
     />
   );
 }
