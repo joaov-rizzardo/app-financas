@@ -31,12 +31,19 @@ export interface Budget {
   month: string; // YYYY-MM
 }
 
+export interface GoalContributionEntry {
+  amount: number;
+  date: string; // YYYY-MM-DD
+  createdAt: string; // ISO 8601
+}
+
 export interface Goal {
   id: string;
   name: string;
   targetAmount: number;
   currentAmount: number;
-  deadline: string; // ISO 8601
+  deadline: string; // ISO 8601 — stored as YYYY-MM-01 (first day of target month)
+  contributions?: GoalContributionEntry[];
   createdAt: string; // ISO 8601
 }
 

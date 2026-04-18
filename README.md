@@ -126,7 +126,16 @@ Cada coleção e seus campos. Campos opcionais marcados com `?`.
 | `name` | `string` | Nome da meta |
 | `targetAmount` | `number` | Valor alvo |
 | `currentAmount` | `number` | Valor poupado até agora |
-| `deadline` | `string` | ISO 8601 |
+| `deadline` | `string` | `YYYY-MM-01` — primeiro dia do mês-alvo |
+| `contributions` | `GoalContributionEntry[]` | Histórico de aportes (embutido no documento) |
+| `createdAt` | `string` | ISO 8601 |
+
+Cada entrada em `contributions`:
+
+| Campo | Tipo | Descrição |
+|---|---|---|
+| `amount` | `number` | Valor do aporte |
+| `date` | `string` | `YYYY-MM-DD` — data do aporte |
 | `createdAt` | `string` | ISO 8601 |
 
 ### `recurringItems`
@@ -160,6 +169,36 @@ Documento único com ID `"default"`.
 |---|---|---|
 | `closingDay` | `number` | Dia de fechamento da fatura (1–31) |
 | `dueDay` | `number` | Dia de vencimento da fatura (1–31) |
+
+---
+
+## Módulo de Metas
+
+### Arquitetura
+- `GoalsScreen` — tela única com lista de metas + modais em bottom sheet
+- `useGoals` — React Query; operações `create`, `update`, `remove`, `addContribution`
+- `src/services/goals.ts` — CRUD Firestore + `addGoalContribution` (usa `arrayUnion` + `increment`)
+
+### Funcionalidades
+- **Listagem**: card por meta com barra de progresso colorida por status
+- **Criação/edição**: modal bottom sheet com nome, valor alvo e seletor mês/ano
+- **Aportes**: botão "Adicionar valor" em cada card; registra o valor e a data no array `contributions` do documento
+- **Estimativa de conclusão**: média de aportes dos últimos 3 meses → "No ritmo atual, você atingirá essa meta em X meses"
+- **Status visual**:
+  - 🟢 **No prazo** — no ritmo para atingir antes do prazo
+  - 🔴 **Atrasada** — prazo vencido ou ritmo insuficiente
+  - 🏆 **Concluída** — `currentAmount >= targetAmount`
+
+### Lógica de status
+```ts
+getGoalStatus(goal):
+  if currentAmount >= targetAmount → 'completed'
+  if monthsLeft < 0 → 'delayed'
+  if monthlyAvg(last 3 months) > 0:
+    if ceil(remaining / avg) <= monthsLeft → 'on_track'
+    else → 'delayed'
+  else → 'on_track'  // sem dados de aporte ainda
+```
 
 ---
 
@@ -236,7 +275,7 @@ Os componentes em `src/components/ui/` seguem os padrões do React Native Reusab
 ### Funcionalidades de dados
 - [ ] Implementar CRUD completo de Lançamentos na tela de Lançamentos
 - [x] Conectar Orçamentos ao Firestore — `useBudgets`, listagem por mês, criar/editar limite por categoria
-- [ ] Conectar Metas ao Firestore (hooks + services)
+- [x] Conectar Metas ao Firestore — `useGoals`, criar/editar/excluir metas, aportes manuais, estimativa de conclusão por média dos últimos 3 meses
 - [ ] Adicionar paginação / scroll infinito na listagem de transações
 
 ### Gráficos reais

@@ -8,6 +8,8 @@ import {
   getDocs,
   orderBy,
   query,
+  arrayUnion,
+  increment,
 } from 'firebase/firestore';
 import { db } from './firebase';
 import type { Goal } from '@/types/finance';
@@ -29,6 +31,7 @@ export async function getGoalById(id: string): Promise<Goal | null> {
 export async function createGoal(data: Omit<Goal, 'id' | 'createdAt'>): Promise<string> {
   const ref = await addDoc(collection(db, COLLECTION), {
     ...data,
+    contributions: [],
     createdAt: new Date().toISOString(),
   });
   return ref.id;
@@ -43,4 +46,16 @@ export async function updateGoal(
 
 export async function deleteGoal(id: string): Promise<void> {
   await deleteDoc(doc(db, COLLECTION, id));
+}
+
+export async function addGoalContribution(goalId: string, amount: number): Promise<void> {
+  const today = new Date().toISOString().split('T')[0];
+  await updateDoc(doc(db, COLLECTION, goalId), {
+    currentAmount: increment(amount),
+    contributions: arrayUnion({
+      amount,
+      date: today,
+      createdAt: new Date().toISOString(),
+    }),
+  });
 }
