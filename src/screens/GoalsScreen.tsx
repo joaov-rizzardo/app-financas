@@ -1,17 +1,18 @@
 import * as React from 'react';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   ScrollView,
   View,
   Modal,
   Pressable,
   TextInput,
-  Animated,
+  KeyboardAvoidingView,
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   Plus,
+  Minus,
   Target,
   Trophy,
   TrendingUp,
@@ -21,10 +22,11 @@ import {
   Pencil,
   Trash2,
   Clock,
+  ArrowLeft,
 } from 'lucide-react-native';
-import { Card } from '@/components/ui/Card';
 import { Text, Label } from '@/components/ui/Text';
 import { Button } from '@/components/ui/Button';
+import { ActionButton } from '@/components/ui/ActionButton';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { colors } from '@/constants/colors';
@@ -43,9 +45,6 @@ const MONTHS_PT_SHORT = [
   'jan', 'fev', 'mar', 'abr', 'mai', 'jun',
   'jul', 'ago', 'set', 'out', 'nov', 'dez',
 ];
-
-const GOAL_FORM_HEIGHT = 520;
-const CONTRIBUTION_HEIGHT = 300;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -181,8 +180,6 @@ interface ContributionModalProps {
 }
 
 function ContributionModal({ visible, goal, isPending, onConfirm, onClose }: ContributionModalProps) {
-  const translateY = useRef(new Animated.Value(CONTRIBUTION_HEIGHT)).current;
-  const opacity = useRef(new Animated.Value(0)).current;
   const [rawCents, setRawCents] = useState(0);
   const [isWithdraw, setIsWithdraw] = useState(false);
 
@@ -190,21 +187,14 @@ function ContributionModal({ visible, goal, isPending, onConfirm, onClose }: Con
     if (visible) {
       setRawCents(0);
       setIsWithdraw(false);
-      translateY.setValue(CONTRIBUTION_HEIGHT);
-      opacity.setValue(0);
-      Animated.parallel([
-        Animated.timing(opacity, { toValue: 1, duration: 180, useNativeDriver: true }),
-        Animated.spring(translateY, { toValue: 0, tension: 280, friction: 26, useNativeDriver: true }),
-      ]).start();
-    } else {
-      translateY.setValue(CONTRIBUTION_HEIGHT);
-      opacity.setValue(0);
     }
   }, [visible]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const maxWithdrawCents = Math.round((goal?.currentAmount ?? 0) * 100);
   const exceedsBalance = isWithdraw && rawCents > maxWithdrawCents;
   const canConfirm = rawCents > 0 && !exceedsBalance;
+  const accentColor = isWithdraw ? colors.danger : colors.success;
+  const projectedBalance = (goal?.currentAmount ?? 0) + (isWithdraw ? -(rawCents / 100) : rawCents / 100);
 
   const handleConfirm = () => {
     if (!canConfirm) return;
@@ -213,145 +203,177 @@ function ContributionModal({ visible, goal, isPending, onConfirm, onClose }: Con
 
   return (
     <Modal
-      transparent
       visible={visible}
+      animationType="slide"
       statusBarTranslucent
-      animationType="none"
       onRequestClose={isPending ? undefined : onClose}
     >
-      <Animated.View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.75)', opacity }}>
-        <Pressable style={{ flex: 1 }} onPress={isPending ? undefined : onClose} />
-        <Animated.View
-          style={{
-            backgroundColor: colors.background.elevated,
-            borderTopLeftRadius: 28,
-            borderTopRightRadius: 28,
-            borderTopWidth: 1,
-            borderLeftWidth: 1,
-            borderRightWidth: 1,
-            borderColor: colors.border.DEFAULT,
-            paddingHorizontal: 24,
-            paddingTop: 12,
-            paddingBottom: Platform.OS === 'ios' ? 40 : 28,
-            transform: [{ translateY }],
-          }}
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background.DEFAULT }} edges={['top']}>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
-          {/* Handle */}
+          {/* Header */}
           <View
             style={{
-              width: 40, height: 4, borderRadius: 2,
-              backgroundColor: colors.border.DEFAULT,
-              alignSelf: 'center', marginBottom: 22,
-            }}
-          />
-
-          {/* Title */}
-          <View style={{ marginBottom: 16 }}>
-            <Label style={{ marginBottom: 4 }}>Movimentar valor</Label>
-            <Text size="lg" weight="bold" numberOfLines={1}>
-              {goal?.name ?? ''}
-            </Text>
-          </View>
-
-          {/* Mode toggle */}
-          <View
-            style={{
-              flexDirection: 'row',
-              backgroundColor: colors.background.card,
-              borderRadius: 12,
-              padding: 3,
-              marginBottom: 16,
+              flexDirection: 'row', alignItems: 'center',
+              paddingHorizontal: 16, paddingTop: 16, paddingBottom: 12, gap: 12,
             }}
           >
-            {(['add', 'withdraw'] as const).map((mode) => {
-              const active = (mode === 'withdraw') === isWithdraw;
-              return (
-                <Pressable
-                  key={mode}
-                  onPress={() => { setIsWithdraw(mode === 'withdraw'); setRawCents(0); }}
-                  style={{
-                    flex: 1,
-                    paddingVertical: 8,
-                    borderRadius: 10,
-                    alignItems: 'center',
-                    backgroundColor: active
-                      ? (mode === 'withdraw' ? colors.danger + 'dd' : colors.primary.DEFAULT)
-                      : 'transparent',
-                  }}
-                >
-                  <Text
-                    size="sm"
-                    weight="semibold"
-                    style={{ color: active ? '#fff' : colors.text.secondary }}
-                  >
-                    {mode === 'add' ? 'Adicionar' : 'Remover'}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-
-          {/* Amount input */}
-          <View
-            style={{
-              backgroundColor: colors.background.card,
-              borderRadius: 16,
-              borderWidth: 1,
-              borderColor: exceedsBalance ? colors.danger : colors.border.DEFAULT,
-              paddingHorizontal: 16,
-              paddingVertical: 14,
-              flexDirection: 'row',
-              alignItems: 'center',
-              marginBottom: exceedsBalance ? 6 : 20,
-            }}
-          >
-            <Text
-              size="xl"
-              weight="semibold"
-              style={{ marginRight: 6, color: isWithdraw ? colors.danger : colors.text.muted }}
+            <Pressable
+              onPress={isPending ? undefined : onClose}
+              style={{
+                width: 38, height: 38, borderRadius: 12,
+                backgroundColor: colors.background.card,
+                alignItems: 'center', justifyContent: 'center',
+                borderWidth: 1, borderColor: colors.border.DEFAULT,
+              }}
+              className="active:opacity-70"
             >
-              {isWithdraw ? '−' : '+'} R$
-            </Text>
-            <TextInput
-              value={centsToDisplay(rawCents)}
-              onChangeText={(t) => setRawCents(displayToCents(t))}
-              keyboardType="numeric"
-              placeholder="0,00"
-              placeholderTextColor={colors.text.muted}
-              autoFocus
-              style={{ flex: 1, fontSize: 28, fontWeight: '700', color: colors.text.primary }}
-            />
+              <ArrowLeft size={18} color={colors.text.secondary} />
+            </Pressable>
+            <View style={{ flex: 1 }}>
+              <Label>Movimentar valor</Label>
+              <Text size="xl" weight="bold" style={{ marginTop: 2 }} numberOfLines={1}>
+                {goal?.name ?? ''}
+              </Text>
+            </View>
+            <View
+              style={{
+                width: 38, height: 38, borderRadius: 12,
+                backgroundColor: accentColor + '20',
+                alignItems: 'center', justifyContent: 'center',
+              }}
+            >
+              <TrendingUp size={18} color={accentColor} />
+            </View>
           </View>
 
-          {/* Validation message */}
-          {exceedsBalance && (
-            <Text size="xs" style={{ color: colors.danger, marginBottom: 16 }}>
-              Valor maior que o saldo atual ({formatCurrency(goal?.currentAmount ?? 0)})
-            </Text>
-          )}
+          <ScrollView
+            contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            {/* Mode toggle */}
+            <View
+              style={{
+                flexDirection: 'row',
+                backgroundColor: colors.background.elevated,
+                borderRadius: 14, padding: 4, marginBottom: 16,
+                borderWidth: 1, borderColor: colors.border.DEFAULT,
+              }}
+            >
+              {(['add', 'withdraw'] as const).map((mode) => {
+                const active = (mode === 'withdraw') === isWithdraw;
+                const modeColor = mode === 'withdraw' ? colors.danger : colors.success;
+                return (
+                  <Pressable
+                    key={mode}
+                    onPress={() => { setIsWithdraw(mode === 'withdraw'); setRawCents(0); }}
+                    style={{
+                      flex: 1, paddingVertical: 10,
+                      borderRadius: 10, alignItems: 'center',
+                      backgroundColor: active ? modeColor : 'transparent',
+                    }}
+                    className="active:opacity-80"
+                  >
+                    <Text
+                      size="sm"
+                      weight="semibold"
+                      style={{ color: active ? '#fff' : colors.text.secondary }}
+                    >
+                      {mode === 'add' ? 'Adicionar' : 'Remover'}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
 
-          {/* Actions */}
-          <View style={{ flexDirection: 'row', gap: 12 }}>
-            <Button
-              variant="secondary"
-              label="Cancelar"
-              size="md"
-              onPress={onClose}
-              disabled={isPending}
-              style={{ flex: 1 }}
-            />
-            <Button
-              variant={isWithdraw ? 'destructive' : 'primary'}
-              label={isWithdraw ? 'Remover' : 'Adicionar'}
-              size="md"
+            {/* Amount card */}
+            <View
+              style={{
+                backgroundColor: colors.background.elevated,
+                borderRadius: 20, padding: 20, marginBottom: 16,
+                borderWidth: 1,
+                borderColor: exceedsBalance ? colors.danger : colors.border.DEFAULT,
+                alignItems: 'center',
+              }}
+            >
+              <Label style={{ marginBottom: 8 }}>
+                {isWithdraw ? 'Valor a remover' : 'Valor a adicionar'}
+              </Label>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Text size="2xl" weight="bold" style={{ color: accentColor }}>
+                  {isWithdraw ? '−' : '+'} R$
+                </Text>
+                <TextInput
+                  value={centsToDisplay(rawCents)}
+                  onChangeText={(t) => setRawCents(displayToCents(t))}
+                  keyboardType="numeric"
+                  placeholder="0,00"
+                  placeholderTextColor={colors.text.muted}
+                  autoFocus
+                  style={{
+                    color: accentColor,
+                    fontSize: 36,
+                    fontWeight: '800',
+                    minWidth: 80,
+                    paddingVertical: 0,
+                  }}
+                />
+              </View>
+              {exceedsBalance && (
+                <Text size="xs" style={{ color: colors.danger, marginTop: 8 }}>
+                  Valor maior que o saldo atual ({formatCurrency(goal?.currentAmount ?? 0)})
+                </Text>
+              )}
+            </View>
+
+            {/* Balance info row */}
+            <View
+              style={{
+                flexDirection: 'row', alignItems: 'center', gap: 12,
+                backgroundColor: colors.background.surface,
+                borderRadius: 14, padding: 14, marginBottom: 24,
+                borderWidth: 1, borderColor: colors.border.DEFAULT,
+              }}
+            >
+              <View
+                style={{
+                  width: 36, height: 36, borderRadius: 10,
+                  backgroundColor: colors.success + '20',
+                  alignItems: 'center', justifyContent: 'center',
+                }}
+              >
+                <TrendingUp size={17} color={colors.success} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text size="xs" variant="muted">Saldo atual</Text>
+                <Text size="sm" weight="semibold">
+                  {formatCurrency(goal?.currentAmount ?? 0)}
+                </Text>
+              </View>
+              {rawCents > 0 && !exceedsBalance && (
+                <View style={{ alignItems: 'flex-end' }}>
+                  <Text size="xs" variant="muted">Novo saldo</Text>
+                  <Text size="sm" weight="semibold" style={{ color: accentColor }}>
+                    {formatCurrency(projectedBalance)}
+                  </Text>
+                </View>
+              )}
+            </View>
+
+            <ActionButton
+              label={isWithdraw ? 'Remover valor' : 'Adicionar valor'}
+              icon={isWithdraw ? Minus : Plus}
               onPress={handleConfirm}
-              disabled={!canConfirm || isPending}
               loading={isPending}
-              style={{ flex: 1 }}
+              disabled={!canConfirm}
+              variant={isWithdraw ? 'danger' : 'success'}
             />
-          </View>
-        </Animated.View>
-      </Animated.View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
     </Modal>
   );
 }
@@ -368,9 +390,6 @@ interface GoalFormModalProps {
 }
 
 function GoalFormModal({ visible, existing, isSaving, onSave, onDelete, onClose }: GoalFormModalProps) {
-  const translateY = useRef(new Animated.Value(GOAL_FORM_HEIGHT)).current;
-  const opacity = useRef(new Animated.Value(0)).current;
-
   const [name, setName] = useState('');
   const [rawCents, setRawCents] = useState(0);
   const [deadline, setDeadline] = useState(defaultDeadlineState());
@@ -386,15 +405,6 @@ function GoalFormModal({ visible, existing, isSaving, onSave, onDelete, onClose 
         setRawCents(0);
         setDeadline(defaultDeadlineState());
       }
-      translateY.setValue(GOAL_FORM_HEIGHT);
-      opacity.setValue(0);
-      Animated.parallel([
-        Animated.timing(opacity, { toValue: 1, duration: 180, useNativeDriver: true }),
-        Animated.spring(translateY, { toValue: 0, tension: 280, friction: 26, useNativeDriver: true }),
-      ]).start();
-    } else {
-      translateY.setValue(GOAL_FORM_HEIGHT);
-      opacity.setValue(0);
     }
   }, [visible]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -402,193 +412,207 @@ function GoalFormModal({ visible, existing, isSaving, onSave, onDelete, onClose 
 
   return (
     <Modal
-      transparent
       visible={visible}
+      animationType="slide"
       statusBarTranslucent
-      animationType="none"
       onRequestClose={isSaving ? undefined : onClose}
     >
-      <Animated.View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.75)', opacity }}>
-        <Pressable style={{ flex: 1 }} onPress={isSaving ? undefined : onClose} />
-        <Animated.View
-          style={{
-            backgroundColor: colors.background.elevated,
-            borderTopLeftRadius: 28,
-            borderTopRightRadius: 28,
-            borderTopWidth: 1,
-            borderLeftWidth: 1,
-            borderRightWidth: 1,
-            borderColor: colors.border.DEFAULT,
-            paddingHorizontal: 24,
-            paddingTop: 12,
-            paddingBottom: Platform.OS === 'ios' ? 40 : 28,
-            transform: [{ translateY }],
-          }}
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background.DEFAULT }} edges={['top']}>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
-          {/* Handle */}
-          <View
-            style={{
-              width: 40, height: 4, borderRadius: 2,
-              backgroundColor: colors.border.DEFAULT,
-              alignSelf: 'center', marginBottom: 22,
-            }}
-          />
-
           {/* Header */}
-          <View style={{ marginBottom: 24 }}>
-            <Label style={{ marginBottom: 4 }}>
-              {existing ? 'Editar meta' : 'Nova meta'}
-            </Label>
-            <Text size="xl" weight="bold">
-              {existing ? existing.name : 'Definir objetivo'}
-            </Text>
-          </View>
-
-          {/* Name input */}
           <View
             style={{
-              backgroundColor: colors.background.card,
-              borderRadius: 16,
-              borderWidth: 1,
-              borderColor: colors.border.DEFAULT,
-              paddingHorizontal: 16,
-              paddingVertical: 14,
-              marginBottom: 12,
+              flexDirection: 'row', alignItems: 'center',
+              paddingHorizontal: 16, paddingTop: 16, paddingBottom: 12, gap: 12,
             }}
           >
-            <Label style={{ marginBottom: 6 }}>Nome da meta</Label>
-            <TextInput
-              value={name}
-              onChangeText={setName}
-              placeholder="Ex: Reserva de emergência"
-              placeholderTextColor={colors.text.muted}
+            <Pressable
+              onPress={isSaving ? undefined : onClose}
               style={{
-                fontSize: 16,
-                fontWeight: '500',
-                color: colors.text.primary,
+                width: 38, height: 38, borderRadius: 12,
+                backgroundColor: colors.background.card,
+                alignItems: 'center', justifyContent: 'center',
+                borderWidth: 1, borderColor: colors.border.DEFAULT,
               }}
-            />
+              className="active:opacity-70"
+            >
+              <ArrowLeft size={18} color={colors.text.secondary} />
+            </Pressable>
+            <View style={{ flex: 1 }}>
+              <Label>{existing ? 'Editar meta' : 'Nova meta'}</Label>
+              <Text size="xl" weight="bold" style={{ marginTop: 2 }}>
+                {existing ? existing.name : 'Definir objetivo'}
+              </Text>
+            </View>
+            <View
+              style={{
+                width: 38, height: 38, borderRadius: 12,
+                backgroundColor: colors.primary.DEFAULT + '20',
+                alignItems: 'center', justifyContent: 'center',
+              }}
+            >
+              <Target size={18} color={colors.primary[400]} />
+            </View>
           </View>
 
-          {/* Target amount input */}
-          <View
-            style={{
-              backgroundColor: colors.background.card,
-              borderRadius: 16,
-              borderWidth: 1,
-              borderColor: colors.border.DEFAULT,
-              paddingHorizontal: 16,
-              paddingVertical: 14,
-              flexDirection: 'row',
-              alignItems: 'center',
-              marginBottom: 12,
-            }}
+          <ScrollView
+            contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
           >
-            <View style={{ flex: 1 }}>
-              <Label style={{ marginBottom: 6 }}>Valor alvo</Label>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Text size="lg" weight="semibold" variant="muted" style={{ marginRight: 6 }}>R$</Text>
+            {/* Amount card */}
+            <View
+              style={{
+                backgroundColor: colors.background.elevated,
+                borderRadius: 20, padding: 20, marginBottom: 16,
+                borderWidth: 1, borderColor: colors.border.DEFAULT,
+                alignItems: 'center',
+              }}
+            >
+              <Label style={{ marginBottom: 8 }}>Valor alvo</Label>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Text size="2xl" weight="bold" style={{ color: colors.primary[400] }}>R$</Text>
                 <TextInput
                   value={centsToDisplay(rawCents)}
                   onChangeText={(t) => setRawCents(displayToCents(t))}
                   keyboardType="numeric"
                   placeholder="0,00"
                   placeholderTextColor={colors.text.muted}
-                  style={{ flex: 1, fontSize: 20, fontWeight: '700', color: colors.text.primary }}
+                  style={{
+                    color: colors.primary[400],
+                    fontSize: 36,
+                    fontWeight: '800',
+                    minWidth: 80,
+                    paddingVertical: 0,
+                  }}
                 />
               </View>
             </View>
-          </View>
 
-          {/* Deadline picker */}
-          <View
-            style={{
-              backgroundColor: colors.background.card,
-              borderRadius: 16,
-              borderWidth: 1,
-              borderColor: colors.border.DEFAULT,
-              paddingHorizontal: 16,
-              paddingVertical: 14,
-              marginBottom: 20,
-            }}
-          >
-            <Label style={{ marginBottom: 10 }}>Prazo</Label>
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Pressable
-                onPress={() => setDeadline((d) => shiftDeadlineMonth(d.year, d.month, -1))}
+            {/* Name field */}
+            <View
+              style={{
+                flexDirection: 'row', alignItems: 'center', gap: 12,
+                backgroundColor: colors.background.surface,
+                borderRadius: 14, padding: 14, marginBottom: 12,
+                borderWidth: 1, borderColor: colors.border.DEFAULT,
+              }}
+            >
+              <View
                 style={{
                   width: 36, height: 36, borderRadius: 10,
-                  backgroundColor: colors.background.elevated,
+                  backgroundColor: colors.background.card,
                   alignItems: 'center', justifyContent: 'center',
                 }}
-                className="active:opacity-60"
               >
-                <ChevronLeft size={18} color={colors.text.secondary} />
-              </Pressable>
-
-              <Text size="base" weight="semibold">
-                {MONTHS_PT_FULL[deadline.month]} {deadline.year}
-              </Text>
-
-              <Pressable
-                onPress={() => setDeadline((d) => shiftDeadlineMonth(d.year, d.month, 1))}
-                style={{
-                  width: 36, height: 36, borderRadius: 10,
-                  backgroundColor: colors.background.elevated,
-                  alignItems: 'center', justifyContent: 'center',
-                }}
-                className="active:opacity-60"
-              >
-                <ChevronRight size={18} color={colors.text.secondary} />
-              </Pressable>
+                <Pencil size={17} color={colors.text.muted} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text size="xs" variant="muted" style={{ marginBottom: 2 }}>Nome da meta</Text>
+                <TextInput
+                  value={name}
+                  onChangeText={setName}
+                  placeholder="Ex: Reserva de emergência"
+                  placeholderTextColor={colors.text.muted}
+                  style={{
+                    color: colors.text.primary,
+                    fontSize: 14,
+                    fontWeight: '500',
+                    paddingVertical: 0,
+                  }}
+                />
+              </View>
             </View>
-          </View>
 
-          {/* Actions */}
-          <View style={{ flexDirection: 'row', gap: 12, marginBottom: existing && onDelete ? 12 : 0 }}>
-            <Button
-              variant="secondary"
-              label="Cancelar"
-              size="md"
-              onPress={onClose}
-              disabled={isSaving}
-              style={{ flex: 1 }}
-            />
-            <Button
-              variant="primary"
-              label="Salvar"
-              size="md"
+            {/* Deadline field */}
+            <View
+              style={{
+                flexDirection: 'row', alignItems: 'center', gap: 12,
+                backgroundColor: colors.background.surface,
+                borderRadius: 14, padding: 14, marginBottom: 24,
+                borderWidth: 1, borderColor: colors.border.DEFAULT,
+              }}
+            >
+              <View
+                style={{
+                  width: 36, height: 36, borderRadius: 10,
+                  backgroundColor: colors.accent.DEFAULT + '20',
+                  alignItems: 'center', justifyContent: 'center',
+                }}
+              >
+                <Calendar size={17} color={colors.accent.DEFAULT} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text size="xs" variant="muted" style={{ marginBottom: 2 }}>Prazo</Text>
+                <Text size="sm" weight="semibold">
+                  {MONTHS_PT_FULL[deadline.month]} {deadline.year}
+                </Text>
+              </View>
+              <View style={{ flexDirection: 'row', gap: 6 }}>
+                <Pressable
+                  onPress={() => setDeadline((d) => shiftDeadlineMonth(d.year, d.month, -1))}
+                  style={{
+                    width: 32, height: 32, borderRadius: 8,
+                    backgroundColor: colors.background.card,
+                    borderWidth: 1, borderColor: colors.border.DEFAULT,
+                    alignItems: 'center', justifyContent: 'center',
+                  }}
+                  className="active:opacity-60"
+                >
+                  <ChevronLeft size={16} color={colors.text.secondary} />
+                </Pressable>
+                <Pressable
+                  onPress={() => setDeadline((d) => shiftDeadlineMonth(d.year, d.month, 1))}
+                  style={{
+                    width: 32, height: 32, borderRadius: 8,
+                    backgroundColor: colors.background.card,
+                    borderWidth: 1, borderColor: colors.border.DEFAULT,
+                    alignItems: 'center', justifyContent: 'center',
+                  }}
+                  className="active:opacity-60"
+                >
+                  <ChevronRight size={16} color={colors.text.secondary} />
+                </Pressable>
+              </View>
+            </View>
+
+            <ActionButton
+              label={existing ? 'Salvar alterações' : 'Criar meta'}
+              icon={Target}
               onPress={() =>
                 canSave &&
                 onSave(name.trim(), rawCents / 100, stateToDeadlineIso(deadline.year, deadline.month))
               }
-              disabled={!canSave || isSaving}
+              disabled={!canSave}
               loading={isSaving}
-              style={{ flex: 1 }}
+              variant="primary"
             />
-          </View>
 
-          {/* Delete */}
-          {existing && onDelete && (
-            <Pressable
-              onPress={onDelete}
-              disabled={isSaving}
-              style={{
-                flexDirection: 'row', alignItems: 'center',
-                justifyContent: 'center', gap: 6,
-                paddingVertical: 10,
-                opacity: isSaving ? 0.4 : 1,
-              }}
-              className="active:opacity-50"
-            >
-              <Trash2 size={14} color={colors.danger} strokeWidth={2} />
-              <Text size="sm" weight="semibold" style={{ color: colors.danger }}>
-                Excluir meta
-              </Text>
-            </Pressable>
-          )}
-        </Animated.View>
-      </Animated.View>
+            {/* Delete */}
+            {existing && onDelete && (
+              <Pressable
+                onPress={onDelete}
+                disabled={isSaving}
+                style={{
+                  flexDirection: 'row', alignItems: 'center',
+                  justifyContent: 'center', gap: 6,
+                  paddingVertical: 16,
+                  opacity: isSaving ? 0.4 : 1,
+                }}
+                className="active:opacity-50"
+              >
+                <Trash2 size={14} color={colors.danger} strokeWidth={2} />
+                <Text size="sm" weight="semibold" style={{ color: colors.danger }}>
+                  Excluir meta
+                </Text>
+              </Pressable>
+            )}
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
     </Modal>
   );
 }
