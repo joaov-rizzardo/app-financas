@@ -235,7 +235,8 @@ Os componentes em `src/components/ui/` seguem os padrões do React Native Reusab
 
 ### Funcionalidades de dados
 - [ ] Implementar CRUD completo de Lançamentos na tela de Lançamentos
-- [ ] Conectar Orçamentos e Metas ao Firestore (hooks + services)
+- [x] Conectar Orçamentos ao Firestore — `useBudgets`, listagem por mês, criar/editar limite por categoria
+- [ ] Conectar Metas ao Firestore (hooks + services)
 - [ ] Adicionar paginação / scroll infinito na listagem de transações
 
 ### Gráficos reais
