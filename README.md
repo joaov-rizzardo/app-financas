@@ -36,12 +36,19 @@ app-financas/
 │   ├── navigation/
 │   │   └── TabNavigator.tsx
 │   ├── screens/
-│   │   ├── DashboardScreen.tsx
-│   │   ├── LancamentosScreen.tsx
-│   │   ├── CartaoScreen.tsx
-│   │   ├── OrcamentosScreen.tsx
-│   │   ├── MetasScreen.tsx
-│   │   └── RelatoriosScreen.tsx
+│   │   ├── DashboardScreen/      # Módulo Dashboard
+│   │   │   ├── index.tsx         # Orquestração de dados + layout principal
+│   │   │   ├── MonthHeader.tsx   # Header com navegação de mês
+│   │   │   ├── SummaryCards.tsx  # Cards de Receitas / Despesas / Saldo
+│   │   │   ├── SavingsRateCard.tsx  # Card de taxa de poupança (destaque)
+│   │   │   ├── BudgetSummaryCard.tsx # Barra de resumo de orçamentos
+│   │   │   ├── RecentTransactions.tsx # Últimos 5 lançamentos
+│   │   │   └── CreditCardInvoiceCard.tsx # Fatura atual do cartão
+│   │   ├── TransactionsScreen/   # Módulo Lançamentos
+│   │   ├── CreditCardScreen.tsx  # Módulo Cartão
+│   │   ├── BudgetsScreen.tsx     # Módulo Orçamentos
+│   │   ├── GoalsScreen.tsx       # Módulo Metas
+│   │   └── ReportsScreen.tsx     # Módulo Relatórios
 │   ├── services/
 │   │   ├── firebase.ts       # Inicialização do Firebase
 │   │   └── transactions.ts   # CRUD de transações no Firestore
@@ -172,6 +179,29 @@ Documento único com ID `"default"`.
 
 ---
 
+## Módulo Dashboard
+
+### Arquitetura
+- `DashboardScreen/index.tsx` — orquestra todos os dados via React Query e passa props para sub-componentes
+- Navegação por mês: estado local `selectedMonth` (YYYY-MM) com setas de navegação
+- Card de fatura sempre baseado no mês corrente (independente do mês selecionado)
+
+### Seções da tela
+| Componente | Dados | Ação |
+|---|---|---|
+| `MonthHeader` | `selectedMonth` | Navegar entre meses |
+| `SummaryCards` | `useTransactions(month)` | — |
+| `SavingsRateCard` | Receitas e despesas do mês | — |
+| `BudgetSummaryCard` | `useBudgets(month)` + transações | Navegar para Orçamentos |
+| `RecentTransactions` | Últimas 5 transações do mês | Navegar para Lançamentos |
+| `CreditCardInvoiceCard` | `useCreditCardExpenses(invoiceMonth)` + config | Navegar para Cartão |
+
+### Taxa de poupança
+- `>= 20%` → verde | `10–19%` → amarelo | `< 10%` → vermelho
+- Barra de progresso + valor economizado em reais
+
+---
+
 ## Módulo de Metas
 
 ### Arquitetura
@@ -273,6 +303,7 @@ Os componentes em `src/components/ui/` seguem os padrões do React Native Reusab
 - [ ] Proteger rotas com um `AuthNavigator` envolvendo o `TabNavigator`
 
 ### Funcionalidades de dados
+- [x] Dashboard com resumo mensal, navegação por mês, taxa de poupança, orçamentos e fatura do cartão
 - [ ] Implementar CRUD completo de Lançamentos na tela de Lançamentos
 - [x] Conectar Orçamentos ao Firestore — `useBudgets`, listagem por mês, criar/editar limite por categoria
 - [x] Conectar Metas ao Firestore — `useGoals`, criar/editar/excluir metas, aportes manuais, estimativa de conclusão por média dos últimos 3 meses
