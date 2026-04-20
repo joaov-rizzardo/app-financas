@@ -48,7 +48,14 @@ app-financas/
 │   │   ├── CreditCardScreen.tsx  # Módulo Cartão
 │   │   ├── BudgetsScreen.tsx     # Módulo Orçamentos
 │   │   ├── GoalsScreen.tsx       # Módulo Metas
-│   │   └── ReportsScreen.tsx     # Módulo Relatórios
+│   │   ├── ReportsScreen/        # Módulo Relatórios
+│   │   │   ├── index.tsx         # Orquestração de dados + layout principal
+│   │   │   ├── PeriodSelector.tsx  # Seletor de período (mês / 3m / 6m / 12m)
+│   │   │   ├── SummarySection.tsx  # Cards de receita, despesa, saldo e poupança
+│   │   │   ├── DonutChartCard.tsx  # Gráfico de rosca + lista de categorias
+│   │   │   ├── BarChartCard.tsx    # Gráfico de barras: fixo vs variável
+│   │   │   ├── LineChartCard.tsx   # Gráfico de linha: evolução do saldo
+│   │   │   └── HighlightCard.tsx   # Mês mais gasto e mês mais economizado
 │   ├── services/
 │   │   ├── firebase.ts       # Inicialização do Firebase
 │   │   └── transactions.ts   # CRUD de transações no Firestore
@@ -232,6 +239,34 @@ getGoalStatus(goal):
 
 ---
 
+## Módulo de Relatórios
+
+### Arquitetura
+- `ReportsScreen/index.tsx` — orquestra estado de período e passa dados para sub-componentes
+- `useReports(period)` — React Query; busca transações do período selecionado + últimos 6 meses para tendências
+- Gráficos renderizados com `react-native-svg` (zero dependência de biblioteca de terceiros para charts)
+
+### Seções da tela
+
+| Componente | Descrição |
+|---|---|
+| `PeriodSelector` | Tabs Mês / 3m / 6m / 12m; navegação por seta quando modo = Mês |
+| `SummarySection` | 4 KPI cards: receita, despesa, saldo e taxa de poupança |
+| `DonutChartCard` | Gráfico de rosca (SVG) + lista detalhada com valor e % por categoria |
+| `BarChartCard` | Barras agrupadas: fixo (roxo) vs variável (ciano) nos últimos 6 meses |
+| `LineChartCard` | Linha de evolução do saldo com área de gradiente nos últimos 6 meses |
+| `HighlightCard` | Destaque do mês com maior gasto e mês com maior saldo nos últimos 6 meses |
+
+### Lógica de "fixo vs variável"
+- **Fixo** → `tx.isRecurring === true` (gerados de `recurringItems`)
+- **Variável** → `tx.isRecurring === false` (lançamentos avulsos)
+
+### Período selecionável
+- **Mês**: filtra transações de `YYYY-MM-01` a `YYYY-MM-31`
+- **3 / 6 / 12 meses**: filtra do início do mês N atrás até o fim do mês atual
+
+---
+
 ## Configuração do Firebase
 
 1. Copie `.env.example` para `.env`:
@@ -310,7 +345,7 @@ Os componentes em `src/components/ui/` seguem os padrões do React Native Reusab
 - [ ] Adicionar paginação / scroll infinito na listagem de transações
 
 ### Gráficos reais
-- [ ] Integrar `victory-native` ou `react-native-gifted-charts` para os gráficos em Relatórios
+- [x] Tela de Relatórios com gráficos SVG nativos via `react-native-svg`
 
 ### UX / Design
 - [ ] Bottom sheet para criação rápida de lançamentos (`@gorhom/bottom-sheet`)

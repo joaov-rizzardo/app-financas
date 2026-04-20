@@ -6,3 +6,4 @@ export * from './useGoals';
 export * from './useCreditCardExpenses';
 export * from './useCreditCardConfig';
 export * from './useRecurringCardItems';
+export * from './useReports';

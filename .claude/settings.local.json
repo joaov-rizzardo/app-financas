@@ -16,7 +16,8 @@
       "Bash(grep -r \"LucideIcon\\\\|LucideProps\" node_modules/lucide-react-native/dist/*.d.ts)",
       "Bash(node -e \"const icons = require\\('lucide-react-native'\\); console.log\\('Layers:', !!icons.Layers, 'FileText:', !!icons.FileText, 'AlignLeft:', !!icons.AlignLeft\\)\")",
       "Bash(grep -E \"\\\\.\\(tsx?|json\\)$\")",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(npm show *)"
     ]
   }
 }
