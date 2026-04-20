@@ -37,17 +37,14 @@ export function DashboardScreen() {
   const { budgets, isLoading: loadingBudgets } = useBudgets(selectedMonth);
   const { config, isLoading: loadingConfig } = useCreditCardConfig();
 
-  const selectedInvoiceMonth = useMemo(() => {
-    if (!config) return selectedMonth;
-    // Use the last day of the selected month to get the invoice that closes in that month
-    const [year, month] = selectedMonth.split('-').map(Number);
-    const lastDay = new Date(year, month, 0).getDate();
-    const lastDayStr = `${selectedMonth}-${String(lastDay).padStart(2, '0')}`;
-    return getInvoiceMonth(lastDayStr, config.closingDay);
-  }, [config, selectedMonth]);
+  const currentOpenInvoiceMonth = useMemo(() => {
+    if (!config) return null;
+    const today = new Date().toISOString().slice(0, 10);
+    return getInvoiceMonth(today, config.closingDay);
+  }, [config]);
 
   const { expenses: cardExpenses, isLoading: loadingCard } =
-    useCreditCardExpenses(selectedInvoiceMonth);
+    useCreditCardExpenses(currentOpenInvoiceMonth ?? undefined);
 
   // ── Derived ───────────────────────────────────────────────────────────────
   const { income, expenses } = useMemo(() => {
@@ -94,9 +91,9 @@ export function DashboardScreen() {
   );
 
   const cardDueDate = useMemo(() => {
-    if (!config) return '';
-    return getInvoiceDueDate(selectedInvoiceMonth, config.dueDay);
-  }, [config, selectedInvoiceMonth]);
+    if (!config || !currentOpenInvoiceMonth) return '';
+    return getInvoiceDueDate(currentOpenInvoiceMonth, config.dueDay);
+  }, [config, currentOpenInvoiceMonth]);
 
   // ── Loading flags ─────────────────────────────────────────────────────────
   const isDataLoading = loadingTx || loadingCategories;
@@ -124,6 +121,17 @@ export function DashboardScreen() {
           isLoading={isDataLoading}
         />
 
+        {(config || isCardLoading) && (
+          <CreditCardInvoiceCard
+            total={cardInvoiceTotal}
+            dueDate={cardDueDate}
+            invoiceMonth={currentOpenInvoiceMonth ?? ''}
+            isLoading={isCardLoading}
+            onPress={() => navigation.navigate('Cartão')}
+            limit={config?.limit}
+          />
+        )}
+
         <SavingsRateCard
           income={income}
           expenses={expenses}
@@ -142,16 +150,6 @@ export function DashboardScreen() {
           isLoading={isDataLoading}
           onViewAll={() => navigation.navigate('Lançamentos')}
         />
-
-        {(config || isCardLoading) && (
-          <CreditCardInvoiceCard
-            total={cardInvoiceTotal}
-            dueDate={cardDueDate}
-            invoiceMonth={selectedInvoiceMonth}
-            isLoading={isCardLoading}
-            onPress={() => navigation.navigate('Cartão')}
-          />
-        )}
 
         {/* Bottom spacer for last card shadow */}
         <View className="h-2" />
