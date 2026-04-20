@@ -73,19 +73,14 @@ export function getInvoiceMonth(date: string, closingDay: number): string {
   return `${year}-${String(month + 1).padStart(2, '0')}`;
 }
 
-/**
- * Returns the due date for a given invoice month.
- * The due date is always in the month following the invoice month.
- */
+/** Returns the due date for a given invoice month (dueDay of that same month). */
 export function getInvoiceDueDate(invoiceMonth: string, dueDay: number): string {
   const [yearStr, monthStr] = invoiceMonth.split('-');
   const year = parseInt(yearStr, 10);
   const month = parseInt(monthStr, 10); // 1-indexed
-  const dueMonth = month === 12 ? 1 : month + 1;
-  const dueYear = month === 12 ? year + 1 : year;
-  const lastDay = new Date(dueYear, dueMonth, 0).getDate();
+  const lastDay = new Date(year, month, 0).getDate();
   const day = Math.min(dueDay, lastDay);
-  return `${dueYear}-${String(dueMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
 /** Format "2026-04" → "abril 2026" for display in headers. */
