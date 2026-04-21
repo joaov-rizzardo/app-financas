@@ -107,6 +107,7 @@ export function TabNavigator() {
           key={screen.name}
           name={screen.name}
           component={screen.component}
+          options={screen.name === 'Categorias' ? { tabBarItemStyle: { display: 'none', width: 0 } } : undefined}
         />
       ))}
     </Tab.Navigator>

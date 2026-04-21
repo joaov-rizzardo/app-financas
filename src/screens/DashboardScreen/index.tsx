@@ -112,6 +112,7 @@ export function DashboardScreen() {
           month={selectedMonth}
           onPrev={() => setSelectedMonth((m) => shiftInvoiceMonth(m, -1))}
           onNext={() => setSelectedMonth((m) => shiftInvoiceMonth(m, 1))}
+          onCategories={() => navigation.navigate('Categorias')}
         />
 
         <SummaryCards
