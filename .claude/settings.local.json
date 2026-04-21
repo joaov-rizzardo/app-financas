@@ -17,7 +17,14 @@
       "Bash(node -e \"const icons = require\\('lucide-react-native'\\); console.log\\('Layers:', !!icons.Layers, 'FileText:', !!icons.FileText, 'AlignLeft:', !!icons.AlignLeft\\)\")",
       "Bash(grep -E \"\\\\.\\(tsx?|json\\)$\")",
       "Bash(ls:*)",
-      "Bash(npm show *)"
+      "Bash(npm show *)",
+      "Bash(eas --version)",
+      "Bash(eas whoami *)",
+      "Bash(eas build *)",
+      "Bash(eas build:view 59ca8bd3-45c8-4213-af9f-fa6f52e82662)",
+      "Bash(eas build:logs 59ca8bd3-45c8-4213-af9f-fa6f52e82662)",
+      "Bash(node *)",
+      "Bash(npm list *)"
     ]
   }
 }

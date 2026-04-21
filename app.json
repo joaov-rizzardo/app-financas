@@ -8,7 +8,7 @@
     "userInterfaceStyle": "dark",
     "newArchEnabled": false,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#0f0f14"
     },
@@ -16,16 +16,23 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.joaovRizzardo.finapp",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#0f0f14"
       }
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/icon.png"
     },
     "plugins": [
       "expo-font"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "72ce4a01-6751-46f3-b419-96d03c51e90f"
+      }
+    },
+    "owner": "joaov-rizzardo"
   }
 }
