@@ -33,7 +33,7 @@ const CATEGORY_ICONS = [
   'Wifi',        'Smartphone',   'Baby',          'Dumbbell', 'ShoppingBag', 'Package',
   'Bus',         'Ticket',       'Film',          'Pizza',    'Briefcase',   'Code2',
   'TrendingUp',  'Gift',         'Coins',         'PiggyBank','Building2',   'Tag',
-  'Scissors',    'Star',         'Globe',         'Wallet',   'GlassWater',  'Layers',
+  'Scissors',    'PawPrint',         'Globe',         'Wallet',   'GlassWater',  'Layers',
 ];
 
 // ─── Props ────────────────────────────────────────────────────────────────────

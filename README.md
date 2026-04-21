@@ -255,11 +255,22 @@ getGoalStatus(goal):
 | `DonutChartCard` | Gráfico de rosca (SVG) + lista detalhada com valor e % por categoria |
 | `BarChartCard` | Barras agrupadas: fixo (roxo) vs variável (ciano) nos últimos 6 meses |
 | `LineChartCard` | Linha de evolução do saldo com área de gradiente nos últimos 6 meses |
+| `CategoryComparisonCard` | Gráfico de múltiplas linhas comparando despesas por categoria ao longo do tempo |
 | `HighlightCard` | Destaque do mês com maior gasto e mês com maior saldo nos últimos 6 meses |
 
 ### Lógica de "fixo vs variável"
 - **Fixo** → `tx.isRecurring === true` (gerados de `recurringItems`)
 - **Variável** → `tx.isRecurring === false` (lançamentos avulsos)
+
+### Gráfico de comparação por categoria
+- Seleção de 2 a 5 categorias de despesa via bottom sheet
+- Cada categoria recebe uma linha com a cor definida no Firestore + padrão de traço distinto
+- Seletor de período independente: 3, 6 ou 12 meses (padrão 6)
+- Chips removíveis acima do gráfico; seleção persistida via `AsyncStorage`
+- Tooltip ao tocar em um ponto: categoria, mês e valor exato
+- Eixo X rolável horizontalmente quando o período é longo
+- Estado vazio com ícone e instrução quando menos de 2 categorias selecionadas
+- Hook `useCategoryTrend(categoryIds, periodMonths)` → `CategoryLineStat[]` por categoria e mês
 
 ### Período selecionável
 - **Mês**: filtra transações de `YYYY-MM-01` a `YYYY-MM-31`

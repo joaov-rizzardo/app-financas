@@ -31,8 +31,6 @@ export interface MonthStat {
   label: string;   // short label, e.g. "Abr"
   income: number;
   expense: number;
-  fixedExpense: number;
-  variableExpense: number;
   balance: number;
 }
 
@@ -126,15 +124,10 @@ export function useReports(period: PeriodRange) {
   const monthlyStats = useMemo((): MonthStat[] => {
     return months6m.map((month) => {
       const txs = trendTx.filter((tx) => tx.date.startsWith(month));
-      let income = 0, expense = 0, fixedExpense = 0, variableExpense = 0;
+      let income = 0, expense = 0;
       for (const tx of txs) {
-        if (tx.type === 'income') {
-          income += tx.amount;
-        } else {
-          expense += tx.amount;
-          if (tx.isRecurring) fixedExpense += tx.amount;
-          else variableExpense += tx.amount;
-        }
+        if (tx.type === 'income') income += tx.amount;
+        else expense += tx.amount;
       }
       const [, monthStr] = month.split('-');
       return {
@@ -142,8 +135,6 @@ export function useReports(period: PeriodRange) {
         label: SHORT_MONTHS[parseInt(monthStr, 10) - 1],
         income,
         expense,
-        fixedExpense,
-        variableExpense,
         balance: income - expense,
       };
     });

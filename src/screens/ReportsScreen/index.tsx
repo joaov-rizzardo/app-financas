@@ -6,9 +6,9 @@ import { useReports } from '@/hooks/useReports';
 import { PeriodSelector } from './PeriodSelector';
 import { SummarySection } from './SummarySection';
 import { DonutChartCard } from './DonutChartCard';
-import { BarChartCard } from './BarChartCard';
 import { LineChartCard } from './LineChartCard';
 import { HighlightCard } from './HighlightCard';
+import { CategoryComparisonCard } from './CategoryComparisonCard';
 import type { PeriodMode } from './PeriodSelector';
 import type { PeriodRange } from '@/hooks/useReports';
 
@@ -61,9 +61,9 @@ export function ReportsScreen() {
 
         <DonutChartCard data={categoryBreakdown} isLoading={isLoading} />
 
-        <BarChartCard data={monthlyStats} isLoading={isLoading} />
-
         <LineChartCard data={monthlyStats} isLoading={isLoading} />
+
+        <CategoryComparisonCard />
 
         <HighlightCard highlights={highlights} />
 
