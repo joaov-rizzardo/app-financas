@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { useState, useMemo } from 'react';
-import { ScrollView, View } from 'react-native';
+import { ScrollView, View, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Tags, ChevronRight } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { useTransactions } from '@/hooks/useTransactions';
@@ -11,6 +12,8 @@ import { useCreditCardConfig } from '@/hooks/useCreditCardConfig';
 import { useCreditCardExpenses } from '@/hooks/useCreditCardExpenses';
 import { getInvoiceMonth, getInvoiceDueDate, shiftInvoiceMonth } from '@/lib/utils';
 import type { TabParamList } from '@/types/navigation';
+import { colors } from '@/constants/colors';
+import { Text } from '@/components/ui/Text';
 import { MonthHeader } from './MonthHeader';
 import { SummaryCards } from './SummaryCards';
 import { SavingsRateCard } from './SavingsRateCard';
@@ -112,7 +115,6 @@ export function DashboardScreen() {
           month={selectedMonth}
           onPrev={() => setSelectedMonth((m) => shiftInvoiceMonth(m, -1))}
           onNext={() => setSelectedMonth((m) => shiftInvoiceMonth(m, 1))}
-          onCategories={() => navigation.navigate('Categorias')}
         />
 
         <SummaryCards
@@ -151,6 +153,17 @@ export function DashboardScreen() {
           isLoading={isDataLoading}
           onViewAll={() => navigation.navigate('Lançamentos')}
         />
+
+        <Pressable
+          onPress={() => navigation.navigate('Categorias')}
+          className="flex-row items-center bg-background-surface border border-border rounded-2xl px-4 py-3.5 mt-3 active:opacity-70"
+        >
+          <View className="w-8 h-8 rounded-xl bg-background-elevated items-center justify-center mr-3">
+            <Tags size={16} color={colors.text.secondary} strokeWidth={1.8} />
+          </View>
+          <Text className="flex-1 text-text-primary" weight="medium">Gerenciar categorias</Text>
+          <ChevronRight size={16} color={colors.text.muted} strokeWidth={2} />
+        </Pressable>
 
         {/* Bottom spacer for last card shadow */}
         <View className="h-2" />

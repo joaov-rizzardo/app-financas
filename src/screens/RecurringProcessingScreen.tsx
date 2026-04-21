@@ -236,7 +236,7 @@ export function RecurringProcessingScreen({
 
       {/* Bottom wordmark */}
       <View style={styles.footer}>
-        <Text style={styles.footerText}>app finanças</Text>
+        <Text style={styles.footerText}>finapp</Text>
       </View>
     </View>
   );

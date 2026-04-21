@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "App Finanças",
-    "slug": "app-financas",
+    "name": "Finapp",
+    "slug": "finapp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
