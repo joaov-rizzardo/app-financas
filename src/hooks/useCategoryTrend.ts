@@ -40,7 +40,7 @@ export function useCategoryTrend(categoryIds: string[], periodMonths: 3 | 6 | 12
   // No type filter in Firestore — adding type == X alongside date range + orderBy(date)
   // requires a composite index. Filter by expense in JS instead (same pattern as useReports).
   const { data: allTransactions = [], isLoading, isError } = useQuery({
-    queryKey: ['categoryTrend', from, to],
+    queryKey: ['reports', 'categoryTrend', from, to],
     queryFn: () => listTransactions({ from, to }),
     placeholderData: keepPreviousData,
   });

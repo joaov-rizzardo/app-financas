@@ -67,18 +67,25 @@ export function useTransactions(month?: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: TRANSACTIONS_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: RECURRING_ITEMS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ['reports'] });
     },
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<Omit<Transaction, 'id' | 'createdAt'>> }) =>
       updateTransaction(id, data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: TRANSACTIONS_QUERY_KEY }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: TRANSACTIONS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ['reports'] });
+    }
   });
 
   const removeMutation = useMutation({
     mutationFn: deleteTransaction,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: TRANSACTIONS_QUERY_KEY }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: TRANSACTIONS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ['reports'] });
+    },
   });
 
   return {

@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { closeInvoice, getInvoicePayment } from '@/services/creditCardInvoices';
 import type { CreditCardExpense } from '@/types/finance';
+import { TRANSACTIONS_QUERY_KEY } from './useTransactions';
 
 export const CREDIT_CARD_INVOICE_QUERY_KEY = ['creditCardInvoice'] as const;
 
@@ -24,7 +25,8 @@ export function useCreditCardInvoice(invoiceMonth: string) {
     }) => closeInvoice(invoiceMonth, expenses, categoryId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey });
-      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: TRANSACTIONS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ['reports'] });
     },
   });
 
