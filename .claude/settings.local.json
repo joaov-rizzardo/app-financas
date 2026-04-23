@@ -24,7 +24,10 @@
       "Bash(eas build:view 59ca8bd3-45c8-4213-af9f-fa6f52e82662)",
       "Bash(eas build:logs 59ca8bd3-45c8-4213-af9f-fa6f52e82662)",
       "Bash(node *)",
-      "Bash(npm list *)"
+      "Bash(npm list *)",
+      "Bash(python3 -c ' *)",
+      "Bash(identify assets/icon.png)",
+      "Bash(python3 -c \"import cairosvg; print\\('cairosvg ok'\\)\")"
     ]
   }
 }

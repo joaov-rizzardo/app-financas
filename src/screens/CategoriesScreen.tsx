@@ -188,7 +188,7 @@ export function CategoriesScreen({
   onDelete,
 }: CategoriesScreenProps) {
   const [activeType, setActiveType] = useState<TransactionType>('expense');
-  const { confirm, dialogProps } = useConfirmDialog();
+  const { confirm, dialogProps, setLoading, close } = useConfirmDialog();
 
   const filtered = useMemo(
     () => categories.filter((c) => c.type === activeType),
@@ -209,7 +209,9 @@ export function CategoriesScreen({
     });
 
     if (confirmed) {
+      setLoading(true);
       await onDelete(cat.id);
+      close();
     }
   };
 

@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <!-- Único uso de gradiente: fill num <rect> — suportado por todos os conversores -->
+    <linearGradient id="card-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"   stop-color="#1e1e2a"/>
+      <stop offset="100%" stop-color="#0f0f14"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Fundo externo -->
+  <rect width="1024" height="1024" fill="#08080e"/>
+
+  <!-- Card -->
+  <rect x="72" y="72" width="880" height="880" rx="180" ry="180"
+        fill="url(#card-bg)"/>
+
+  <!-- Borda roxa fina -->
+  <rect x="72" y="72" width="880" height="880" rx="180" ry="180"
+        fill="none" stroke="#7c3aed" stroke-width="3"/>
+
+  <!-- Linha de tendência -->
+  <polyline
+    points="205,510 345,370 450,450 625,258"
+    fill="none"
+    stroke="#a78bfa"
+    stroke-width="44"
+    stroke-linecap="round"
+    stroke-linejoin="round"/>
+
+  <!-- Cabeça da seta -->
+  <polygon
+    points="752,178 568,222 654,348"
+    fill="#a78bfa"/>
+
+  <!-- Divisória -->
+  <line x1="192" y1="570" x2="832" y2="570"
+        stroke="#2a2a3d" stroke-width="2"/>
+
+  <!-- Texto "fi" -->
+  <text
+    x="512" y="810"
+    font-family="'Inter', 'Helvetica Neue', Arial, sans-serif"
+    font-size="305"
+    font-weight="900"
+    letter-spacing="-8"
+    text-anchor="middle"
+    fill="#f4f4f8">fi</text>
+
+</svg>
