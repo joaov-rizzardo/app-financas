@@ -156,19 +156,27 @@ function CategorySheet({
                         paddingVertical: 10,
                         borderRadius: 14,
                         borderWidth: 1.5,
-                        backgroundColor: isSelected ? cat.color + '22' : colors.background.card,
-                        borderColor: isSelected ? cat.color : colors.border.DEFAULT,
+                        backgroundColor: isSelected ? cat.color + '25' : cat.color + '12',
+                        borderColor: isSelected ? cat.color : cat.color + '50',
                       }}
                     >
-                      <Icon size={16} color={isSelected ? cat.color : colors.text.secondary} strokeWidth={1.75} />
+                      <Icon size={16} color={cat.color} strokeWidth={1.75} />
                       <Text
                         size="sm"
                         weight={isSelected ? 'semibold' : 'normal'}
-                        style={{ color: isSelected ? cat.color : colors.text.primary }}
+                        style={{ color: cat.color }}
                       >
                         {cat.name}
                       </Text>
-                      {isSelected && <X size={11} color={cat.color} strokeWidth={2.5} />}
+                      {isSelected && (
+                        <View style={{
+                          width: 16, height: 16, borderRadius: 8,
+                          backgroundColor: cat.color,
+                          alignItems: 'center', justifyContent: 'center', marginLeft: 2,
+                        }}>
+                          <X size={9} color="#fff" strokeWidth={3} />
+                        </View>
+                      )}
                     </Pressable>
                   );
                 })}

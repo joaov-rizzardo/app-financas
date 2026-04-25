@@ -283,18 +283,26 @@ function CategoryPickerModal({
                     paddingHorizontal: 14,
                     paddingVertical: 10,
                     borderRadius: 12,
-                    backgroundColor: selected ? cat.color + '30' : colors.background.card,
+                    backgroundColor: selected ? cat.color + '25' : cat.color + '12',
                     borderWidth: 1,
-                    borderColor: selected ? cat.color : colors.border.DEFAULT,
+                    borderColor: selected ? cat.color : cat.color + '50',
                   }}
                   className="active:opacity-70"
                 >
                   <Icon size={15} color={cat.color} />
                   <Text size="sm" weight={selected ? 'semibold' : 'medium'}
-                    style={{ color: selected ? cat.color : colors.text.secondary }}>
+                    style={{ color: cat.color }}>
                     {cat.name}
                   </Text>
-                  {selected && <Check size={13} color={cat.color} />}
+                  {selected && (
+                    <View style={{
+                      width: 16, height: 16, borderRadius: 8,
+                      backgroundColor: cat.color,
+                      alignItems: 'center', justifyContent: 'center', marginLeft: 2,
+                    }}>
+                      <Check size={10} color="#fff" strokeWidth={3} />
+                    </View>
+                  )}
                 </Pressable>
               );
             })}
