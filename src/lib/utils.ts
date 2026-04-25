@@ -65,7 +65,7 @@ export function getInvoiceMonth(date: string, closingDay: number): string {
   const year = d.getFullYear();
   const month = d.getMonth(); // 0-indexed
 
-  if (day > closingDay) {
+  if (day >= closingDay) {
     const next = new Date(year, month + 1, 1);
     return `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}`;
   }
