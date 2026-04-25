@@ -4,7 +4,7 @@ import { TrendingUp, TrendingDown, Wallet, PiggyBank } from 'lucide-react-native
 import { Card } from '@/components/ui/Card';
 import { Text, Label } from '@/components/ui/Text';
 import { colors } from '@/constants/colors';
-import { formatCurrencyCompact, formatCurrency } from '@/lib/utils';
+import { formatCurrencyCompact } from '@/lib/utils';
 import type { PeriodSummary } from '@/hooks/useReports';
 
 export interface SummarySectionProps {
@@ -39,22 +39,34 @@ export function SummarySection({ summary, isLoading }: SummarySectionProps) {
     <View className="mb-4">
       <View className="flex-row gap-3 mb-3">
         {/* Receitas */}
-        <View className="flex-1 bg-success/10 rounded-2xl p-4 border border-success/20">
-          <View className="w-8 h-8 rounded-xl bg-success/20 items-center justify-center mb-2">
+        <View
+          className="flex-1 rounded-2xl p-4 border"
+          style={{ backgroundColor: colors.success + '1a', borderColor: colors.success + '45' }}
+        >
+          <View
+            className="w-8 h-8 rounded-xl items-center justify-center mb-2"
+            style={{ backgroundColor: colors.success + '28' }}
+          >
             <TrendingUp size={15} color={colors.success} />
           </View>
-          <Label className="text-success mb-1">Receitas</Label>
+          <Label className="mb-1" style={{ color: colors.success + 'cc' }}>Receitas</Label>
           <Text size="xl" weight="bold" className="text-success">
             {formatCurrencyCompact(income)}
           </Text>
         </View>
 
         {/* Despesas */}
-        <View className="flex-1 bg-danger/10 rounded-2xl p-4 border border-danger/20">
-          <View className="w-8 h-8 rounded-xl bg-danger/20 items-center justify-center mb-2">
+        <View
+          className="flex-1 rounded-2xl p-4 border"
+          style={{ backgroundColor: colors.danger + '1a', borderColor: colors.danger + '45' }}
+        >
+          <View
+            className="w-8 h-8 rounded-xl items-center justify-center mb-2"
+            style={{ backgroundColor: colors.danger + '28' }}
+          >
             <TrendingDown size={15} color={colors.danger} />
           </View>
-          <Label className="text-danger mb-1">Despesas</Label>
+          <Label className="mb-1" style={{ color: colors.danger + 'cc' }}>Despesas</Label>
           <Text size="xl" weight="bold" className="text-danger">
             {formatCurrencyCompact(expense)}
           </Text>
@@ -64,26 +76,21 @@ export function SummarySection({ summary, isLoading }: SummarySectionProps) {
       <View className="flex-row gap-3">
         {/* Saldo */}
         <View
-          className={`flex-1 rounded-2xl p-4 border ${
-            balancePositive
-              ? 'bg-background-elevated border-border'
-              : 'bg-danger/10 border-danger/20'
-          }`}
+          className="flex-1 rounded-2xl p-4 border"
+          style={{
+            backgroundColor: colors.primary.DEFAULT + '1a',
+            borderColor: colors.primary.DEFAULT + '45',
+          }}
         >
           <View
-            className={`w-8 h-8 rounded-xl items-center justify-center mb-2 ${
-              balancePositive ? 'bg-primary/15' : 'bg-danger/20'
-            }`}
+            className="w-8 h-8 rounded-xl items-center justify-center mb-2"
+            style={{ backgroundColor: colors.primary.DEFAULT + '28' }}
           >
-            <Wallet size={15} color={balancePositive ? colors.primary.DEFAULT : colors.danger} />
+            <Wallet size={15} color={colors.primary[400]} />
           </View>
-          <Label className={balancePositive ? 'text-text-muted mb-1' : 'text-danger mb-1'}>Saldo</Label>
-          <Text
-            size="xl"
-            weight="bold"
-            className={balancePositive ? 'text-primary-400' : 'text-danger'}
-          >
-            {formatCurrencyCompact(Math.abs(balance))}
+          <Label className="mb-1" style={{ color: colors.primary[400] + 'cc' }}>Saldo</Label>
+          <Text size="xl" weight="bold" className="text-primary-400">
+            {!balancePositive ? '− ' : ''}{formatCurrencyCompact(Math.abs(balance))}
           </Text>
         </View>
 

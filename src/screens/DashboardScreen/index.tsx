@@ -124,6 +124,13 @@ export function DashboardScreen() {
           isLoading={isDataLoading}
         />
 
+        <SavingsRateCard
+          income={income}
+          expenses={expenses}
+          isLoading={isDataLoading}
+        />
+
+
         {(config || isCardLoading) && (
           <CreditCardInvoiceCard
             total={cardInvoiceTotal}
@@ -134,12 +141,6 @@ export function DashboardScreen() {
             limit={config?.limit}
           />
         )}
-
-        <SavingsRateCard
-          income={income}
-          expenses={expenses}
-          isLoading={isDataLoading}
-        />
 
         <BudgetSummaryCard
           {...budgetStats}
