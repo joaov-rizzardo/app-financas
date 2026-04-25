@@ -491,7 +491,12 @@ export function CreditCardScreen({
   }
 
   const isClosed = payment !== null;
-  const showCloseButton = !isClosed && expenses.length > 0;
+  const closingDate = config
+    ? `${invoiceMonth}-${String(config.closingDay).padStart(2, '0')}`
+    : null;
+  const today = new Date().toISOString().substring(0, 10);
+  const isPastClosingDate = closingDate !== null && today >= closingDate;
+  const showCloseButton = !isClosed && expenses.length > 0 && isPastClosingDate;
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
