@@ -17,9 +17,6 @@ import {
   ArrowLeft,
   Calendar,
   Tag,
-  ChevronUp,
-  ChevronDown,
-  ChevronLeft,
   ChevronRight,
   Check,
   CreditCard,
@@ -29,6 +26,7 @@ import {
 import { Text, Label } from '@/components/ui/Text';
 import { Separator } from '@/components/ui/Separator';
 import { ActionButton } from '@/components/ui/ActionButton';
+import { DatePicker } from '@/components/ui/DatePicker';
 import { colors } from '@/constants/colors';
 import { formatDate, getInvoiceMonth, formatInvoiceMonth } from '@/lib/utils';
 import type { Category, CreditCardConfig, CreditCardExpense } from '@/types/finance';
@@ -40,24 +38,6 @@ function todayISO(): string {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
-
-function parseDateParts(iso: string) {
-  const [y, m, d] = iso.split('-').map(Number);
-  return { day: d, month: m, year: y };
-}
-
-function buildISO(day: number, month: number, year: number): string {
-  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-}
-
-function daysInMonth(month: number, year: number): number {
-  return new Date(year, month, 0).getDate();
-}
-
-const MONTH_NAMES = [
-  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
-];
 
 function parseCentsToDisplay(cents: number): string {
   if (cents === 0) return '';
@@ -81,134 +61,6 @@ interface Props {
   onBack: () => void;
   initialExpense?: CreditCardExpense;
   onUpdate?: (id: string, data: Partial<Omit<CreditCardExpense, 'id'>>) => Promise<void>;
-}
-
-// ─── DatePickerModal ──────────────────────────────────────────────────────────
-
-function DatePickerModal({
-  visible,
-  value,
-  onConfirm,
-  onClose,
-}: {
-  visible: boolean;
-  value: string;
-  onConfirm: (iso: string) => void;
-  onClose: () => void;
-}) {
-  const translateY = useRef(new Animated.Value(400)).current;
-  const backdropOpacity = useRef(new Animated.Value(0)).current;
-
-  const { day: initDay, month: initMonth, year: initYear } = parseDateParts(value);
-  const [day, setDay] = useState(initDay);
-  const [month, setMonth] = useState(initMonth);
-  const [year, setYear] = useState(initYear);
-
-  useEffect(() => {
-    if (visible) {
-      const { day: d, month: m, year: y } = parseDateParts(value);
-      setDay(d); setMonth(m); setYear(y);
-      Animated.parallel([
-        Animated.spring(translateY, { toValue: 0, tension: 260, friction: 24, useNativeDriver: true }),
-        Animated.timing(backdropOpacity, { toValue: 1, duration: 180, useNativeDriver: true }),
-      ]).start();
-    } else {
-      Animated.parallel([
-        Animated.spring(translateY, { toValue: 400, tension: 260, friction: 24, useNativeDriver: true }),
-        Animated.timing(backdropOpacity, { toValue: 0, duration: 160, useNativeDriver: true }),
-      ]).start();
-    }
-  }, [visible]);
-
-  function adjustDay(delta: number) {
-    const max = daysInMonth(month, year);
-    setDay((prev) => {
-      const next = prev + delta;
-      if (next < 1) return max;
-      if (next > max) return 1;
-      return next;
-    });
-  }
-  function adjustMonth(delta: number) {
-    setMonth((prev) => {
-      const next = prev + delta;
-      if (next < 1) return 12;
-      if (next > 12) return 1;
-      return next;
-    });
-  }
-  function adjustYear(delta: number) {
-    setYear((prev) => Math.max(2020, Math.min(2099, prev + delta)));
-  }
-
-  return (
-    <Modal visible={visible} transparent animationType="none">
-      <Animated.View
-        style={{ flex: 1, backgroundColor: '#000', opacity: backdropOpacity }}
-        onTouchEnd={onClose}
-      />
-      <Animated.View
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          backgroundColor: colors.background.elevated,
-          borderTopLeftRadius: 24,
-          borderTopRightRadius: 24,
-          padding: 24,
-          paddingBottom: 36,
-          transform: [{ translateY }],
-        }}
-      >
-        <Text weight="semibold" size="base" className="mb-6 text-center">
-          Selecionar data
-        </Text>
-        {([
-          { label: 'Dia', value: day, adjust: adjustDay, display: String(day).padStart(2, '0') },
-          { label: 'Mês', value: month, adjust: adjustMonth, display: MONTH_NAMES[month - 1] },
-          { label: 'Ano', value: year, adjust: adjustYear, display: String(year) },
-        ] as const).map((col) => (
-          <View key={col.label} className="flex-row items-center justify-between mb-4">
-            <Text size="sm" variant="muted" style={{ width: 44 }}>{col.label}</Text>
-            <View className="flex-row items-center gap-2 flex-1 justify-end">
-              <Pressable onPress={() => col.adjust(-1)} className="p-2 active:opacity-60">
-                <ChevronDown size={18} color={colors.text.secondary} />
-              </Pressable>
-              <View
-                style={{
-                  minWidth: 100,
-                  paddingHorizontal: 12,
-                  paddingVertical: 8,
-                  backgroundColor: colors.background.card,
-                  borderRadius: 10,
-                  alignItems: 'center',
-                }}
-              >
-                <Text size="base" weight="semibold">{col.display}</Text>
-              </View>
-              <Pressable onPress={() => col.adjust(1)} className="p-2 active:opacity-60">
-                <ChevronUp size={18} color={colors.text.secondary} />
-              </Pressable>
-            </View>
-          </View>
-        ))}
-        <Pressable
-          onPress={() => onConfirm(buildISO(day, month, year))}
-          style={{
-            backgroundColor: colors.primary.DEFAULT,
-            borderRadius: 14,
-            paddingVertical: 14,
-            alignItems: 'center',
-            marginTop: 8,
-          }}
-          className="active:opacity-85"
-        >
-          <Text weight="semibold" size="base" className="text-white">Confirmar</Text>
-        </Pressable>
-      </Animated.View>
-    </Modal>
-  );
 }
 
 // ─── CategoryPickerModal ──────────────────────────────────────────────────────
@@ -735,10 +587,10 @@ export function CreditCardExpenseFormScreen({ categories, config, onCreate, onBa
           />
         </ScrollView>
 
-        <DatePickerModal
+        <DatePicker
           visible={showDatePicker}
           value={date}
-          onConfirm={(iso) => { setDate(iso); setShowDatePicker(false); }}
+          onConfirm={setDate}
           onClose={() => setShowDatePicker(false)}
         />
         <CategoryPickerModal

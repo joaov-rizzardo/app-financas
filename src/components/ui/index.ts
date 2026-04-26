@@ -1,5 +1,6 @@
 export * from './ActionButton';
 export * from './Badge';
+export * from './DatePicker';
 export * from './Button';
 export * from './Card';
 export * from './CategoryBadge';

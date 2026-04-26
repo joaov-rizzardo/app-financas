@@ -15,13 +15,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Icons from 'lucide-react-native';
 import {
   ChevronLeft,
-  ChevronRight,
   Check,
   Plus,
   Calendar,
   Tag,
   ChevronDown,
-  ChevronUp,
   RefreshCw,
   CreditCard,
   X,
@@ -29,6 +27,7 @@ import {
 import { Text, Label } from '@/components/ui/Text';
 import { Separator } from '@/components/ui/Separator';
 import { ActionButton } from '@/components/ui/ActionButton';
+import { DatePicker } from '@/components/ui/DatePicker';
 import { colors } from '@/constants/colors';
 import { formatDate } from '@/lib/utils';
 import type { Category, Transaction, TransactionType, Frequency } from '@/types/finance';
@@ -37,31 +36,11 @@ import type { Category, Transaction, TransactionType, Frequency } from '@/types/
 
 function todayISO(): string {
   const d = new Date();
-  return buildISO(d.getDate(), d.getMonth() + 1, d.getFullYear());
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 }
-
-function currentMonthYear(): { year: number; month: number } {
-  const d = new Date();
-  return { year: d.getFullYear(), month: d.getMonth() + 1 };
-}
-
-function parseDateParts(iso: string): { day: number; month: number; year: number } {
-  const [y, m, d] = iso.split('-').map(Number);
-  return { day: d, month: m, year: y };
-}
-
-function buildISO(day: number, month: number, year: number): string {
-  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-}
-
-function daysInMonth(month: number, year: number): number {
-  return new Date(year, month, 0).getDate();
-}
-
-const MONTH_NAMES = [
-  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
-];
 
 function parseCentsToDisplay(cents: number): string {
   if (cents === 0) return '';
@@ -89,179 +68,6 @@ interface TransactionFormScreenProps {
   onUpdate: (id: string, data: Partial<Omit<Transaction, 'id' | 'createdAt'>>) => Promise<void>;
   onBack: () => void;
 }
-
-// ─── Date Picker Modal ────────────────────────────────────────────────────────
-
-function DatePickerModal({
-  visible,
-  value,
-  onConfirm,
-  onClose,
-}: {
-  visible: boolean;
-  value: string;
-  onConfirm: (iso: string) => void;
-  onClose: () => void;
-}) {
-  const translateY = useRef(new Animated.Value(400)).current;
-  const backdropOpacity = useRef(new Animated.Value(0)).current;
-
-  const { day: initDay, month: initMonth, year: initYear } = parseDateParts(value);
-  const [day, setDay] = useState(initDay);
-  const [month, setMonth] = useState(initMonth);
-  const [year, setYear] = useState(initYear);
-
-  useEffect(() => {
-    if (visible) {
-      const { day: d, month: m, year: y } = parseDateParts(value);
-      setDay(d); setMonth(m); setYear(y);
-      Animated.parallel([
-        Animated.spring(translateY, { toValue: 0, tension: 260, friction: 24, useNativeDriver: true }),
-        Animated.timing(backdropOpacity, { toValue: 1, duration: 180, useNativeDriver: true }),
-      ]).start();
-    } else {
-      Animated.parallel([
-        Animated.timing(translateY, { toValue: 400, duration: 200, useNativeDriver: true }),
-        Animated.timing(backdropOpacity, { toValue: 0, duration: 180, useNativeDriver: true }),
-      ]).start();
-    }
-  }, [visible]);
-
-  const clampDay = (d: number, m: number, y: number) =>
-    Math.min(d, daysInMonth(m, y));
-
-  const changeMonth = (delta: number) => {
-    let nm = month + delta;
-    let ny = year;
-    if (nm > 12) { nm = 1; ny++; }
-    if (nm < 1) { nm = 12; ny--; }
-    setMonth(nm);
-    setYear(ny);
-    setDay((d) => clampDay(d, nm, ny));
-  };
-
-  const changeDay = (delta: number) => {
-    const max = daysInMonth(month, year);
-    setDay((d) => {
-      let nd = d + delta;
-      if (nd < 1) nd = max;
-      if (nd > max) nd = 1;
-      return nd;
-    });
-  };
-
-  const changeYear = (delta: number) => {
-    const ny = year + delta;
-    setYear(ny);
-    setDay((d) => clampDay(d, month, ny));
-  };
-
-  return (
-    <Modal visible={visible} transparent statusBarTranslucent animationType="none" onRequestClose={onClose}>
-      <Animated.View
-        style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', justifyContent: 'flex-end', opacity: backdropOpacity }}
-      >
-        <Pressable style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} onPress={onClose} />
-        <Animated.View
-          style={{
-            backgroundColor: colors.background.elevated,
-            borderTopLeftRadius: 28,
-            borderTopRightRadius: 28,
-            borderTopWidth: 1,
-            borderColor: colors.border.DEFAULT,
-            padding: 24,
-            paddingBottom: 36,
-            transform: [{ translateY }],
-          }}
-        >
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 }}>
-            <Text size="lg" weight="bold">Selecionar data</Text>
-            <Pressable onPress={onClose} className="active:opacity-70"
-              style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: colors.background.card, alignItems: 'center', justifyContent: 'center' }}>
-              <X size={16} color={colors.text.secondary} strokeWidth={2} />
-            </Pressable>
-          </View>
-
-          <View style={{ flexDirection: 'row', gap: 12, marginBottom: 28 }}>
-            {/* Day */}
-            <View style={{ flex: 1, alignItems: 'center' }}>
-              <Label className="mb-3">Dia</Label>
-              <Pressable onPress={() => changeDay(1)} className="active:opacity-70"
-                style={stepBtn}>
-                <ChevronUp size={18} color={colors.text.secondary} />
-              </Pressable>
-              <Text size="xl" weight="bold" style={{ marginVertical: 12, minWidth: 36, textAlign: 'center' }}>
-                {String(day).padStart(2, '0')}
-              </Text>
-              <Pressable onPress={() => changeDay(-1)} className="active:opacity-70"
-                style={stepBtn}>
-                <ChevronDown size={18} color={colors.text.secondary}  />
-              </Pressable>
-            </View>
-
-            <View style={{ width: 1, backgroundColor: colors.border.DEFAULT, marginVertical: 8 }} />
-
-            {/* Month */}
-            <View style={{ flex: 2, alignItems: 'center' }}>
-              <Label className="mb-3">Mês</Label>
-              <Pressable onPress={() => changeMonth(1)} className="active:opacity-70"
-                style={stepBtn}>
-                <ChevronUp size={18} color={colors.text.secondary} />
-              </Pressable>
-              <Text size="base" weight="bold" style={{ marginVertical: 12, textAlign: 'center' }}>
-                {MONTH_NAMES[month - 1]}
-              </Text>
-              <Pressable onPress={() => changeMonth(-1)} className="active:opacity-70"
-                style={stepBtn}>
-                <ChevronDown size={18} color={colors.text.secondary}  />
-              </Pressable>
-            </View>
-
-            <View style={{ width: 1, backgroundColor: colors.border.DEFAULT, marginVertical: 8 }} />
-
-            {/* Year */}
-            <View style={{ flex: 1.4, alignItems: 'center' }}>
-              <Label className="mb-3">Ano</Label>
-              <Pressable onPress={() => changeYear(1)} className="active:opacity-70"
-                style={stepBtn}>
-                <ChevronUp size={18} color={colors.text.secondary}  />
-              </Pressable>
-              <Text size="base" weight="bold" style={{ marginVertical: 12, textAlign: 'center' }}>
-                {year}
-              </Text>
-              <Pressable onPress={() => changeYear(-1)} className="active:opacity-70"
-                style={stepBtn}>
-                <ChevronDown size={18} color={colors.text.secondary} />
-              </Pressable>
-            </View>
-          </View>
-
-          <Pressable
-            onPress={() => { onConfirm(buildISO(day, month, year)); onClose(); }}
-            className="active:opacity-80"
-            style={{
-              height: 52, borderRadius: 14, alignItems: 'center', justifyContent: 'center',
-              backgroundColor: colors.primary.DEFAULT,
-              shadowColor: colors.primary.DEFAULT, shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.4, shadowRadius: 12, elevation: 8,
-            }}
-          >
-            <Text style={{ color: '#fff', fontSize: 15, fontWeight: '700', fontFamily: 'Inter_700Bold' }}>
-              Confirmar
-            </Text>
-          </Pressable>
-        </Animated.View>
-      </Animated.View>
-    </Modal>
-  );
-}
-
-const stepBtn = {
-  width: 36, height: 36, borderRadius: 10,
-  backgroundColor: colors.background.card,
-  borderWidth: 1, borderColor: colors.border.DEFAULT,
-  alignItems: 'center' as const, justifyContent: 'center' as const,
-};
 
 // ─── Category Picker Modal ────────────────────────────────────────────────────
 
@@ -778,7 +584,7 @@ export function TransactionFormScreen({
         </ScrollView>
       </KeyboardAvoidingView>
 
-      <DatePickerModal
+      <DatePicker
         visible={showDatePicker}
         value={date}
         onConfirm={setDate}
