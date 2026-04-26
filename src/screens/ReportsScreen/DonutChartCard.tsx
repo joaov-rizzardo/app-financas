@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { View, useWindowDimensions } from 'react-native';
+import { View, Pressable, useWindowDimensions } from 'react-native';
 import Svg, { Path, Text as SvgText } from 'react-native-svg';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Text, Label } from '@/components/ui/Text';
@@ -104,9 +104,10 @@ function DonutChart({ data, size }: DonutChartProps) {
 export interface DonutChartCardProps {
   data: CategoryStat[];
   isLoading: boolean;
+  onCategoryPress?: (categoryId: string) => void;
 }
 
-export function DonutChartCard({ data, isLoading }: DonutChartCardProps) {
+export function DonutChartCard({ data, isLoading, onCategoryPress }: DonutChartCardProps) {
   const { width } = useWindowDimensions();
   const chartSize = Math.min(width - 80, 220);
 
@@ -143,7 +144,11 @@ export function DonutChartCard({ data, isLoading }: DonutChartCardProps) {
       {/* Legend + list */}
       {data.map((cat, i) => (
         <View key={cat.categoryId}>
-          <View className="py-2.5">
+          <Pressable
+            className="py-2.5 active:opacity-70"
+            onPress={() => onCategoryPress?.(cat.categoryId)}
+            disabled={!onCategoryPress}
+          >
             <View className="flex-row justify-between items-center mb-1.5">
               <View className="flex-row items-center gap-2 flex-1">
                 <View
@@ -169,7 +174,7 @@ export function DonutChartCard({ data, isLoading }: DonutChartCardProps) {
                 }}
               />
             </View>
-          </View>
+          </Pressable>
           {i < data.length - 1 && <Separator />}
         </View>
       ))}

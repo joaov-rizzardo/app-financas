@@ -156,6 +156,7 @@ export function useReports(period: PeriodRange) {
     categoryBreakdown,
     monthlyStats,
     highlights,
+    periodTransactions: periodTx,
     isLoading: loadingPeriod || loadingTrend,
   };
 }

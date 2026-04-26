@@ -16,6 +16,7 @@ import { Text, Label } from '@/components/ui/Text';
 import { Button } from '@/components/ui/Button';
 import { CategoryBadge } from '@/components/ui/CategoryBadge';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { CategoryTransactionsSheet } from '@/components/ui/CategoryTransactionsSheet';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { colors } from '@/constants/colors';
 import { formatCurrency, formatInvoiceMonth, toPercent } from '@/lib/utils';
@@ -284,14 +285,16 @@ interface BudgetCardProps {
   budget: Budget;
   spent: number;
   onEdit: () => void;
+  onPress: () => void;
 }
 
-function BudgetCard({ category, budget, spent, onEdit }: BudgetCardProps) {
+function BudgetCard({ category, budget, spent, onEdit, onPress }: BudgetCardProps) {
   const { pct, barColor, labelColor } = getBudgetStatus(spent, budget.amount);
   const remaining = budget.amount - spent;
   const isOver = spent > budget.amount;
 
   return (
+    <Pressable onPress={onPress} className="active:opacity-80">
     <Card className="mb-3">
       <View className="flex-row items-center gap-3 mb-3">
         <CategoryBadge
@@ -346,6 +349,7 @@ function BudgetCard({ category, budget, spent, onEdit }: BudgetCardProps) {
         <Text size="xs" variant="muted">{formatCurrency(budget.amount)} limite</Text>
       </View>
     </Card>
+    </Pressable>
   );
 }
 
@@ -353,10 +357,12 @@ interface NoBudgetCardProps {
   category: Category;
   spent: number;
   onAdd: () => void;
+  onPress: () => void;
 }
 
-function NoBudgetCard({ category, spent, onAdd }: NoBudgetCardProps) {
+function NoBudgetCard({ category, spent, onAdd, onPress }: NoBudgetCardProps) {
   return (
+    <Pressable onPress={onPress} className="active:opacity-80">
     <Card className="mb-3">
       <View className="flex-row items-center gap-3">
         <CategoryBadge
@@ -394,6 +400,7 @@ function NoBudgetCard({ category, spent, onAdd }: NoBudgetCardProps) {
         </Pressable>
       </View>
     </Card>
+    </Pressable>
   );
 }
 
@@ -407,6 +414,7 @@ export function BudgetsScreen() {
   const { budgets, isLoading: loadingBudgets, create, update, remove, isSaving } = useBudgets(month);
 
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [viewingCategory, setViewingCategory] = useState<Category | null>(null);
   const { confirm, dialogProps, setLoading: setDialogLoading, close: closeDialog } = useConfirmDialog();
 
   const isLoading = loadingCategories || loadingTransactions || loadingBudgets;
@@ -457,6 +465,13 @@ export function BudgetsScreen() {
   }, [withBudget, budgetByCategory, spentByCategory]);
 
   const existingBudget = selectedCategory ? (budgetByCategory[selectedCategory.id] ?? null) : null;
+
+  const viewingTransactions = useMemo(() => {
+    if (!viewingCategory) return [];
+    return transactions.filter(
+      (tx) => tx.categoryId === viewingCategory.id && tx.type === 'expense',
+    );
+  }, [viewingCategory, transactions]);
 
   const monthLabel = (() => {
     const s = formatInvoiceMonth(month);
@@ -555,6 +570,7 @@ export function BudgetsScreen() {
                     budget={budgetByCategory[category.id]}
                     spent={spentByCategory[category.id] ?? 0}
                     onEdit={() => setSelectedCategory(category)}
+                    onPress={() => setViewingCategory(category)}
                   />
                 ))}
               </>
@@ -572,6 +588,7 @@ export function BudgetsScreen() {
                     category={category}
                     spent={spentByCategory[category.id] ?? 0}
                     onAdd={() => setSelectedCategory(category)}
+                    onPress={() => setViewingCategory(category)}
                   />
                 ))}
               </>
@@ -588,6 +605,14 @@ export function BudgetsScreen() {
         onSave={handleSave}
         onDelete={existingBudget ? handleDelete : undefined}
         onClose={() => setSelectedCategory(null)}
+      />
+
+      <CategoryTransactionsSheet
+        visible={viewingCategory !== null}
+        onClose={() => setViewingCategory(null)}
+        category={viewingCategory}
+        transactions={viewingTransactions}
+        periodLabel={monthLabel}
       />
 
       <ConfirmDialog {...dialogProps} />
