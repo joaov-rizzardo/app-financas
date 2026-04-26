@@ -2,6 +2,7 @@ import * as React from 'react';
 import { View, ScrollView, Pressable, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Plus, ChevronLeft, ChevronRight, AlertCircle, RefreshCw, Trash2 } from 'lucide-react-native';
+import { useMonthSwipe } from '@/hooks/useMonthSwipe';
 import { Card } from '@/components/ui/Card';
 import { Text, Label } from '@/components/ui/Text';
 import { Chip } from '@/components/ui/Button';
@@ -92,6 +93,10 @@ export function TransactionsScreen({
 }: TransactionsScreenProps) {
   const [filter, setFilter] = React.useState<FilterType>('all');
   const { confirm, dialogProps, setLoading, close } = useConfirmDialog();
+  const swipeHandlers = useMonthSwipe(
+    () => onMonthChange(shiftMonth(month, -1)),
+    () => onMonthChange(shiftMonth(month, 1)),
+  );
 
   const { year, m } = parseMonth(month);
   const monthLabel = `${MONTH_NAMES[m - 1]} ${year}`;
@@ -132,7 +137,7 @@ export function TransactionsScreen({
       <View style={{
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
         paddingHorizontal: 16, paddingTop: 24, paddingBottom: 16,
-      }}>
+      }} {...swipeHandlers}>
         <View>
           <Label>Lançamentos</Label>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 }}>

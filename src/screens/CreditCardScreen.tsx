@@ -21,6 +21,7 @@ import { Separator } from '@/components/ui/Separator';
 import { Badge } from '@/components/ui/Badge';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { colors } from '@/constants/colors';
+import { useMonthSwipe } from '@/hooks/useMonthSwipe';
 import {
   formatCurrency,
   formatShortDate,
@@ -471,6 +472,10 @@ export function CreditCardScreen({
   const dueDate = config ? getInvoiceDueDate(invoiceMonth, config.dueDay) : null;
   const grouped = groupByDate(expenses);
   const [closeDialogVisible, setCloseDialogVisible] = React.useState(false);
+  const swipeHandlers = useMonthSwipe(
+    () => onMonthChange(shiftInvoiceMonth(invoiceMonth, -1)),
+    () => onMonthChange(shiftInvoiceMonth(invoiceMonth, 1)),
+  );
   const [isClosing, setIsClosing] = React.useState(false);
   const [deleteTarget, setDeleteTarget] = React.useState<CreditCardExpense | null>(null);
 
@@ -575,6 +580,7 @@ export function CreditCardScreen({
             borderRadius: 14, padding: 6, marginBottom: 16,
             borderWidth: 1, borderColor: colors.border.DEFAULT,
           }}
+          {...swipeHandlers}
         >
           <Pressable
             onPress={() => onMonthChange(shiftInvoiceMonth(invoiceMonth, -1))}

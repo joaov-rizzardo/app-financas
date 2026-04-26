@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { Text, Label } from '@/components/ui/Text';
 import { colors } from '@/constants/colors';
 import { formatInvoiceMonth } from '@/lib/utils';
+import { useMonthSwipe } from '@/hooks/useMonthSwipe';
 
 export interface MonthHeaderProps {
   month: string; // YYYY-MM
@@ -14,9 +15,10 @@ export interface MonthHeaderProps {
 export function MonthHeader({ month, onPrev, onNext }: MonthHeaderProps) {
   const raw = formatInvoiceMonth(month); // "abril 2026"
   const label = raw.charAt(0).toUpperCase() + raw.slice(1); // "Abril 2026"
+  const swipeHandlers = useMonthSwipe(onPrev, onNext);
 
   return (
-    <View className="flex-row items-center justify-between pt-6 pb-4">
+    <View className="flex-row items-center justify-between pt-6 pb-4" {...swipeHandlers}>
       <Pressable
         onPress={onPrev}
         hitSlop={8}
