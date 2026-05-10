@@ -43,10 +43,10 @@ export interface Highlights {
 
 const SHORT_MONTHS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
-function getLast6Months(): { from: string; to: string; months: string[] } {
+function getLastNMonths(n: number): { from: string; to: string; months: string[] } {
   const now = new Date();
   const months: string[] = [];
-  for (let i = 5; i >= 0; i--) {
+  for (let i = n - 1; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
   }
@@ -72,7 +72,7 @@ const FALLBACK_COLORS = [
 export function useReports(period: PeriodRange) {
   const { categories } = useCategories();
 
-  const { from: from6m, to: to6m, months: months6m } = useMemo(getLast6Months, []);
+  const { from: from12m, to: to12m, months: months12m } = useMemo(() => getLastNMonths(12), []);
 
   const { data: periodTx = [], isLoading: loadingPeriod } = useQuery({
     queryKey: ['reports', 'period', period.from, period.to],
@@ -80,8 +80,8 @@ export function useReports(period: PeriodRange) {
   });
 
   const { data: trendTx = [], isLoading: loadingTrend } = useQuery({
-    queryKey: ['reports', 'trend6m', from6m, to6m],
-    queryFn: () => listTransactions({ from: from6m, to: to6m }),
+    queryKey: ['reports', 'trend12m', from12m, to12m],
+    queryFn: () => listTransactions({ from: from12m, to: to12m }),
   });
 
   // ── Summary for selected period ───────────────────────────────────────────
@@ -122,7 +122,7 @@ export function useReports(period: PeriodRange) {
 
   // ── 6-month trend ─────────────────────────────────────────────────────────
   const monthlyStats = useMemo((): MonthStat[] => {
-    return months6m.map((month) => {
+    return months12m.map((month) => {
       const txs = trendTx.filter((tx) => tx.date.startsWith(month));
       let income = 0, expense = 0;
       for (const tx of txs) {
@@ -138,7 +138,7 @@ export function useReports(period: PeriodRange) {
         balance: income - expense,
       };
     });
-  }, [trendTx, months6m]);
+  }, [trendTx, months12m]);
 
   // ── Highlights ────────────────────────────────────────────────────────────
   const highlights = useMemo((): Highlights => {

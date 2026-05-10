@@ -10,6 +10,7 @@ import { PeriodSelector } from './PeriodSelector';
 import { SummarySection } from './SummarySection';
 import { DonutChartCard } from './DonutChartCard';
 import { LineChartCard } from './LineChartCard';
+import { IncomeExpenseChartCard } from './IncomeExpenseChartCard';
 import { HighlightCard } from './HighlightCard';
 import { CategoryComparisonCard } from './CategoryComparisonCard';
 import type { PeriodMode } from './PeriodSelector';
@@ -95,6 +96,8 @@ export function ReportsScreen() {
         />
 
         <LineChartCard data={monthlyStats} isLoading={isLoading} />
+
+        <IncomeExpenseChartCard data={monthlyStats} isLoading={isLoading} />
 
         <CategoryComparisonCard />
 
