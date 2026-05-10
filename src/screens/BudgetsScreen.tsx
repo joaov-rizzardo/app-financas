@@ -411,7 +411,7 @@ export function BudgetsScreen() {
 
   const { categories: expenseCategories, isLoading: loadingCategories } = useCategories('expense');
   const { transactions, isLoading: loadingTransactions } = useTransactions(month);
-  const { budgets, isLoading: loadingBudgets, create, update, remove, isSaving } = useBudgets(month);
+  const { budgets, isLoading: loadingBudgets, create, update, remove, isSaving } = useBudgets();
 
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [viewingCategory, setViewingCategory] = useState<Category | null>(null);
@@ -505,7 +505,7 @@ export function BudgetsScreen() {
       if (existingBudget) {
         await update(existingBudget.id, { amount });
       } else {
-        await create({ categoryId: selectedCategory.id, amount, month });
+        await create({ categoryId: selectedCategory.id, amount });
       }
       setSelectedCategory(null);
     } catch (e) {

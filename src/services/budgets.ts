@@ -6,20 +6,14 @@ import {
   doc,
   getDoc,
   getDocs,
-  query,
-  where,
 } from 'firebase/firestore';
 import { db } from './firebase';
 import type { Budget } from '@/types/finance';
 
 const COLLECTION = 'budgets';
 
-export async function listBudgets(month?: string): Promise<Budget[]> {
-  const q = month
-    ? query(collection(db, COLLECTION), where('month', '==', month))
-    : query(collection(db, COLLECTION));
-
-  const snapshot = await getDocs(q);
+export async function listBudgets(): Promise<Budget[]> {
+  const snapshot = await getDocs(collection(db, COLLECTION));
   return snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as Budget));
 }
 

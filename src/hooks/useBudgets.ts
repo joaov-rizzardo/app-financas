@@ -9,12 +9,12 @@ import type { Budget } from '@/types/finance';
 
 export const BUDGETS_QUERY_KEY = ['budgets'] as const;
 
-export function useBudgets(month?: string) {
+export function useBudgets() {
   const queryClient = useQueryClient();
 
   const { data: budgets = [], isLoading, error } = useQuery({
-    queryKey: [...BUDGETS_QUERY_KEY, month ?? 'all'],
-    queryFn: () => listBudgets(month),
+    queryKey: BUDGETS_QUERY_KEY,
+    queryFn: listBudgets,
   });
 
   const createMutation = useMutation({

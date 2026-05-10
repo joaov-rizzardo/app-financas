@@ -37,7 +37,7 @@ export function DashboardScreen() {
   // ── Data ──────────────────────────────────────────────────────────────────
   const { transactions, isLoading: loadingTx } = useTransactions(selectedMonth);
   const { categories, isLoading: loadingCategories } = useCategories();
-  const { budgets, isLoading: loadingBudgets } = useBudgets(selectedMonth);
+  const { budgets, isLoading: loadingBudgets } = useBudgets();
   const { config, isLoading: loadingConfig } = useCreditCardConfig();
 
   const currentOpenInvoiceMonth = useMemo(() => {
